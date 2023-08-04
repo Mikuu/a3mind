@@ -1,0 +1,9 @@
+{
+  "name": "a3mind",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "dependencies": {},
+  "devDependencies": {}
+}
