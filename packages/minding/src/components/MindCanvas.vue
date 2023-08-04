@@ -1,14 +1,17 @@
 <template>
+  <NodeTestMenu/>
   <v-main>
     <v-container class="pa-0" fluid>
       <div id="mind-map"></div>
     </v-container>
   </v-main>
+
 </template>
 
 <script setup>
 import { onMounted } from "vue";
 import { useMindStore } from "@/store/mind";
+import NodeTestMenu from "@/components/NodeTestMenu";
 import '@mind-elixir/node-menu/dist/style.css'
 
 const props = defineProps(['vid']);

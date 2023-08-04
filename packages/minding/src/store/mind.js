@@ -7,6 +7,7 @@ import { extractViewData, flattenNodeData, nodesToMindData } from "@/utils/dataU
 import { keycloak } from "@/plugins/keycloak";
 import * as ambClient from "@/clients/ambClient";
 import { latteTheme } from "@/utils/themeUtils";
+import testMenu from "@/mindPlugins/testMenu/testMenu";
 
 const SYNC_MIND_DATA_INTERVAL = 5000;
 
@@ -85,7 +86,8 @@ export const useMindStore = defineStore('mind', {
       const rootNode = MindElixir.new("");
 
       this.mind = new MindElixir(options);
-      this.mind.install(nodeMenu);
+      // this.mind.install(nodeMenu);
+      this.mind.install(testMenu);
       this.mind.init(rootNode);
       this.mind.bus.addListener('operation', eventListener);
     },
