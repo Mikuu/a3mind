@@ -7,9 +7,43 @@ import { extractViewData, flattenNodeData, nodesToMindData } from "@/utils/dataU
 import { keycloak } from "@/plugins/keycloak";
 import * as ambClient from "@/clients/ambClient";
 import { latteTheme } from "@/utils/themeUtils";
-import testMenu from "@/mindPlugins/testMenu/testMenu";
 
 const SYNC_MIND_DATA_INTERVAL = 5000;
+
+const nodeMenuPlugin = (mind, state) => {
+  return (mind) => {
+    console.log("install node menu adv")
+
+    // handle node selection
+    mind.bus.addListener("unselectNode", function() {
+      state.nodeMenu.display = false;
+      // console.log(`menuAdv unselected`);
+    })
+
+    mind.bus.addListener("selectNode", function(nodeObj, clickEvent) {
+      /**
+       * nodeObj.style
+       * nodeObj.style.fontSize
+       * nodeObj.style.fontWeight
+       * nodeObj.style.color
+       * nodeObj.tags
+       * nodeObj.icons
+       * nodeObj.hyperLink
+       * nodeObj.memo
+       * nodeObj.topic
+       * nodeObj.id
+       * nodeObj.children
+       * nodeObj.parent
+       * nodeObj.direction
+       * **/
+
+      if (!clickEvent) return
+      state.nodeMenu.display = true;
+      // console.log(`menuAdv selected`);
+      // console.log(nodeObj);
+    })
+  }
+}
 
 export const useMindStore = defineStore('mind', {
   state: () => ({
@@ -21,6 +55,10 @@ export const useMindStore = defineStore('mind', {
       updatedNodesIds: [],
       removedNodesIds: []
     }),
+    nodeMenu: {
+      node: null,
+      display: null
+    }
   }),
 
   getters: {
@@ -86,8 +124,8 @@ export const useMindStore = defineStore('mind', {
       const rootNode = MindElixir.new("");
 
       this.mind = new MindElixir(options);
-      // this.mind.install(nodeMenu);
-      this.mind.install(testMenu);
+      this.mind.install(nodeMenu);
+      this.mind.install(nodeMenuPlugin(this.mind, this));
       this.mind.init(rootNode);
       this.mind.bus.addListener('operation', eventListener);
     },
