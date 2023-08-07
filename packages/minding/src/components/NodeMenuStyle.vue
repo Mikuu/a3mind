@@ -30,7 +30,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import {onMounted, ref} from 'vue';
 const fontSizes = ['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming'];
 const fontWeights = [
   'Black text',
@@ -46,6 +46,9 @@ const textDecoration = ['none', 'underline', 'overline', 'line-through'];
 const fontColor = ref('#777777');
 const backgroundColor = ref('transparent');
 
+onMounted(() => {
+  console.log(`FBI --> onMounted nodeMenuStyle starting`);
+})
 </script>
 
 <style>

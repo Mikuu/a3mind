@@ -26,6 +26,21 @@ const checkReturnResponseAndThrowErrorOnRequestFailed = async response => {
   }
 }
 
+export const put = async (url, access_token, payload) => {
+  await checkTokenAndRedirectToLoginIfTokenExpired();
+
+  const response = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${access_token}`
+    },
+    body: JSON.stringify(payload),
+  });
+
+  return await checkReturnResponseAndThrowErrorOnRequestFailed(response);
+};
+
 export const post = async (url, access_token, payload) => {
   await checkTokenAndRedirectToLoginIfTokenExpired();
 
@@ -65,5 +80,4 @@ export const del = async (url, access_token) => {
   });
 
   return await checkReturnResponseAndThrowErrorOnRequestFailed(response);
-
 };

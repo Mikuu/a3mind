@@ -1,4 +1,4 @@
-import { get, post, del } from '@/utils/httpUtils';
+import { get, post, del, put } from '@/utils/httpUtils';
 import {
   HOST,
   BATH_PATH,
@@ -6,7 +6,8 @@ import {
   PATH_VIEW,
   PATH_PROJECT,
   PATH_PROJECTS,
-  PATH_VIEWS
+  PATH_VIEWS,
+  PATH_NODE
 } from '@/configs/ambConfig';
 
 const buildUrl = resourcePath => {
@@ -70,4 +71,34 @@ export const updateNodeBulk = async (accessToken, pid, vid, updateNodes, deleteN
   const payload = { pid, vid, updateNodes, deleteNodeIds }
   console.log(payload);
   return await post(url, accessToken, payload);
+};
+
+export const getNode = async (accessToken, id) => {
+  const url = buildUrl(PATH_NODE) + `?id=${id}`;
+  return await get(url, accessToken);
+};
+
+export const updateNode = async (accessToken, nodeData) => {
+  const url = buildUrl(PATH_NODE);
+  const payload = {
+    // Elixir default attributes
+    id: nodeData.id,
+    root: nodeData.root,
+    tags: nodeData.tags,
+    memo: nodeData.memo,
+    style: nodeData.style,
+    topic: nodeData.topic,
+    icons: nodeData.icons,
+    direction: nodeData.direction,
+    hyperLink: nodeData.hyperLink,
+    childrenIds: nodeData.childrenIds,
+
+    // a3mind attributes
+    parentId: nodeData.parentId,
+    nodeType: nodeData.nodeType,
+    testTitle: nodeData.testTitle,
+    testDescription: nodeData.testDescription
+  }
+  return await put(url, accessToken, payload);
+
 };

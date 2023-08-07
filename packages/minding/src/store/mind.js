@@ -7,6 +7,7 @@ import { extractViewData, flattenNodeData, nodesToMindData } from "@/utils/dataU
 import { keycloak } from "@/plugins/keycloak";
 import * as ambClient from "@/clients/ambClient";
 import { latteTheme } from "@/utils/themeUtils";
+import { getNodeWithInitialAttributes, assignNodeData } from "@/utils/commonUtils";
 
 const SYNC_MIND_DATA_INTERVAL = 5000;
 
@@ -17,7 +18,6 @@ const nodeMenuPlugin = (mind, state) => {
     // handle node selection
     mind.bus.addListener("unselectNode", function() {
       state.nodeMenu.display = false;
-      // console.log(`menuAdv unselected`);
     })
 
     mind.bus.addListener("selectNode", function(nodeObj, clickEvent) {
@@ -39,8 +39,14 @@ const nodeMenuPlugin = (mind, state) => {
 
       if (!clickEvent) return
       state.nodeMenu.display = true;
-      // console.log(`menuAdv selected`);
-      // console.log(nodeObj);
+
+      ambClient.getNode(keycloak.token, nodeObj.id)
+        .then(response => {
+          state.nodeMenu.node = response;
+        })
+        .catch(reason => {
+          console.error(reason);
+        });
     })
   }
 }
@@ -56,7 +62,7 @@ export const useMindStore = defineStore('mind', {
       removedNodesIds: []
     }),
     nodeMenu: {
-      node: null,
+      node: getNodeWithInitialAttributes(),
       display: null
     }
   }),
@@ -67,17 +73,6 @@ export const useMindStore = defineStore('mind', {
   },
 
   actions: {
-    // experiment(elementLocator, level) {
-    //   const options = { el: elementLocator };
-    //   const mind = new MindElixir(options);
-    //   const rootNode = MindElixir.new("demo");
-    //   mind.install(nodeMenu);
-    //   mind.init(rootNode);
-    //
-    //   const mockData = generateMockMindData(level);
-    //   mind.refresh(mockData);
-    // },
-
     /***
      * This action must be called before pull and save data.
      * **/
@@ -217,6 +212,30 @@ export const useMindStore = defineStore('mind', {
 
     loadMindData(mindData) {
       this.mind.refresh(mindData);
+    },
+
+    fetchNode(id, succeedHandler=null, failedHandler=null) {
+      ambClient.getNode(keycloak.token, id)
+        .then(response => {
+          this.nodeMenu.node = response;
+          if (succeedHandler) { succeedHandler(); }
+        })
+        .catch(reason => {
+          console.error(reason);
+          if (failedHandler) { failedHandler(reason?.message ? `: ${reason?.message}` : ""); }
+        });
+    },
+
+    updateNode(succeedHandler=null, failedHandler=null) {
+      const nodeData = assignNodeData(this.nodeMenu.node);
+      ambClient.updateNode(keycloak.token, nodeData)
+        .then(response => {
+          if (succeedHandler) { succeedHandler(); }
+        })
+        .catch(reason => {
+          console.error(reason);
+          if (failedHandler) { failedHandler(reason?.message ? `: ${reason?.message}` : ""); }
+        });
     }
   },
 

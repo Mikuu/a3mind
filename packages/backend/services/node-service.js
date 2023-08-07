@@ -12,6 +12,10 @@ const getNode = async (pid, vid, id) => {
     return await Node.findOne({pid, vid, id});
 };
 
+const getNodeById = async (id) => {
+    return await Node.findOne({id});
+};
+
 const findNode = async (options) => {
     return await Node.findOne(options);
 };
@@ -46,6 +50,7 @@ const appendChild = async (parentNode, childNode) => {
 const findAndUpdateNode = async (pid, vid, nodeData) => {
     return await Node.findOneAndUpdate({ pid: pid, vid: vid, id: nodeData.id},
         {
+            // Elixir default attributes
             topic: nodeData.topic,
             memo: nodeData.memo,
             style: nodeData.style,
@@ -55,7 +60,12 @@ const findAndUpdateNode = async (pid, vid, nodeData) => {
             root: nodeData.root,
             childrenIds: nodeData.childrenIds,
             direction: nodeData.direction,
+
+            // a3mind attributes
             parentId: nodeData.parentId,
+            nodeType: nodeData.nodeType,
+            testTitle: nodeData.nodeType === "test" ? nodeData.testTitle : "",
+            testDescription: nodeData.nodeType === "test" ? nodeData.testDescription : ""
         }, { new: true });
 };
 
@@ -109,6 +119,7 @@ const deleteNodesByVid = async (vid) => {
 module.exports = {
     fetchNodes,
     getNode,
+    getNodeById,
     findNode,
     updateNode,
     createNode,

@@ -13,10 +13,12 @@ const NodeSchema = new Schema({
 
     parentId: { type: String, default: "", trim: true, maxlength: 50 },
     nodeType: { type: String, default: "general", enum: ['scenario', 'test', 'mt-result', 'at-result', 'general'], trim: true },
+    testTitle: { type: String, default: "", trim: true, maxlength: 1200 },
+    testDescription: { type: String, default: "", trim: true, maxlength: 9999 },
 
     /** Elixir default attributes **/
     id: { type: String, default: "", trim: true, maxlength: 50 },
-    topic: { type: String, default: "", trim: true, maxlength: 5000 },
+    topic: { type: String, default: "", trim: true, maxlength: 1200 },
     memo: { type: String, default: "", trim: true, maxlength: 9999 },
     style: { type: Schema.Types.Mixed, default: {}, trim: true, maxlength: 1000 },
     tags: [{ type: String }],

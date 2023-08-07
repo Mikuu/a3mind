@@ -13,10 +13,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import {onMounted, ref} from 'vue';
 const testTitle = ref("");
 const testDescription = ref("");
 
+onMounted(() => {
+  console.log(`FBI --> onMounted nodeMenuTest starting`);
+})
 </script>
 
 <style>

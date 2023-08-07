@@ -6,13 +6,14 @@
     @mousedown="startDrag"
     @touchstart="startDrag"
   >
-    <v-tabs v-model="nodeType">
+    <p>{{ mindStore.nodeMenu.node.topic }}</p>
+    <v-tabs v-model="tab">
       <v-tab value="general">General</v-tab>
       <v-tab value="style">Style</v-tab>
       <v-tab value="test">Test</v-tab>
     </v-tabs>
 
-    <v-window v-model="nodeType">
+    <v-window v-model="tab">
       <v-window-item value="general" class="font-weight-light"><NodeMenuGeneral/></v-window-item>
       <v-window-item value="style" class="font-weight-light"><NodeMenuStyle/></v-window-item>
       <v-window-item value="test" class="font-weight-light"><NodeMenuTest/></v-window-item>
@@ -21,7 +22,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import {onMounted, ref} from 'vue';
 import { useMindStore } from "@/store/mind";
 import NodeMenuGeneral from "@/components/NodeMenuGeneral.vue";
 import NodeMenuStyle from "@/components/NodeMenuStyle.vue";
@@ -29,13 +30,17 @@ import NodeMenuTest from "@/components/NodeMenuTest";
 
 const mindStore = useMindStore();
 
-const nodeType = ref(null);
+const tab = ref(null);
 
 const posX = ref(0);
 const posY = ref(0);
 let isDragging = ref(false);
 let dragStartX = ref(0);
 let dragStartY = ref(0);
+
+onMounted(async () => {
+  console.log(`FBI --> onMounted nodeMenuAdv starting`);
+});
 
 function startDrag(event) {
   isDragging.value = true;
