@@ -2,6 +2,7 @@
 import { defineStore } from 'pinia'
 import MindElixir from "mind-elixir";
 import nodeMenu from '@mind-elixir/node-menu';
+import nodeMenuLocal from '@/mindPlugins/testMenu/testMenu';
 import { useLocalStorage } from '@vueuse/core';
 import { extractViewData, flattenNodeData, nodesToMindData } from "@/utils/dataUtils";
 import { keycloak } from "@/plugins/keycloak";
@@ -119,7 +120,8 @@ export const useMindStore = defineStore('mind', {
       const rootNode = MindElixir.new("");
 
       this.mind = new MindElixir(options);
-      this.mind.install(nodeMenu);
+      // this.mind.install(nodeMenu);
+      this.mind.install(nodeMenuLocal);
       this.mind.install(nodeMenuPlugin(this.mind, this));
       this.mind.init(rootNode);
       this.mind.bus.addListener('operation', eventListener);

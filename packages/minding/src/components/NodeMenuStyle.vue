@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container  class="px-0">
     <div class="d-flex justify-start mt-3 mb-5">
       <div class="d-flex align-center">
         <p class="font-weight-light">Font color</p>

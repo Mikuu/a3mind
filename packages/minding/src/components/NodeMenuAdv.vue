@@ -6,17 +6,21 @@
     @mousedown="startDrag"
     @touchstart="startDrag"
   >
-    <p>{{ mindStore.nodeMenu.node.topic }}</p>
     <v-tabs v-model="tab">
       <v-tab value="general">General</v-tab>
       <v-tab value="style">Style</v-tab>
-      <v-tab value="test">Test</v-tab>
+      <v-tab v-if="mindStore.nodeMenu.node.nodeType === 'test'" value="test">Test</v-tab>
     </v-tabs>
 
     <v-window v-model="tab">
       <v-window-item value="general" class="font-weight-light"><NodeMenuGeneral/></v-window-item>
       <v-window-item value="style" class="font-weight-light"><NodeMenuStyle/></v-window-item>
-      <v-window-item value="test" class="font-weight-light"><NodeMenuTest/></v-window-item>
+      <v-window-item
+        v-if="mindStore.nodeMenu.node.nodeType === 'test'"
+        value="test"
+        class="font-weight-light">
+        <NodeMenuTest/>
+      </v-window-item>
     </v-window>
   </div>
 </template>
