@@ -29,12 +29,24 @@ onMounted(() => {
   console.log(mindStore.mind.currentNode);
 })
 
+watch(() => mindStore.nodeMenu.node.topic, (newTopic, oldTopic) => {
+  if (!mindStore.mind.currentNode) return
+
+  if (typeof newTopic === "string") {
+    mindStore.mind.currentNode.nodeObj.topic = newTopic
+    mindStore.mind.bus.fire("operation", {
+      name: "finishEdit",
+      obj: mindStore.mind.currentNode.nodeObj
+    })
+  }
+});
+
 watch(() => mindStore.nodeMenu.node.tags, (newTags, oldTags) => {
   if (!mindStore.mind.currentNode) return
 
   if (typeof newTags === "string") {
     const newTagsArray = newTags.split(",")
-    mindStore.mind.reshapeNode(mindStore.mind.currentNode, { tags: newTagsArray.filter(tag => tag) })
+    mindStore.mind.reshapeNode(mindStore.mind.currentNode, { tags: newTagsArray.filter(tag => tag.trim()) })
   }
 });
 

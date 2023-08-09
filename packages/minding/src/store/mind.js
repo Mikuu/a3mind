@@ -40,14 +40,16 @@ const nodeMenuPlugin = (mind, state) => {
 
       if (!clickEvent) return
       state.nodeMenu.display = true;
+      state.nodeMenu.node = {...nodeObj};
 
-      ambClient.getNode(keycloak.token, nodeObj.id)
-        .then(response => {
-          state.nodeMenu.node = response;
-        })
-        .catch(reason => {
-          console.error(reason);
-        });
+      // not to retrieve from backend, in case UI has unsubmitted data.
+      // ambClient.getNode(keycloak.token, nodeObj.id)
+      //   .then(response => {
+      //     state.nodeMenu.node = response;
+      //   })
+      //   .catch(reason => {
+      //     console.error(reason);
+      //   });
     })
   }
 }
