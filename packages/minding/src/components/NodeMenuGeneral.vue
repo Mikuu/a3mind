@@ -11,7 +11,7 @@
     <v-text-field v-model="mindStore.nodeMenu.node.topic" label="Topic" variant="outlined"></v-text-field>
     <v-text-field v-model="mindStore.nodeMenu.node.tags" label="Tags" variant="outlined"></v-text-field>
     <v-text-field v-model="mindStore.nodeMenu.node.icons" label="Icons" variant="outlined"></v-text-field>
-    <v-text-field v-model="mindStore.nodeMenu.node.link" label="Link" variant="outlined"></v-text-field>
+    <v-text-field v-model="mindStore.nodeMenu.node.hyperLink" label="Link" variant="outlined"></v-text-field>
     <v-textarea
       v-model="mindStore.nodeMenu.node.memo"
       label="Memo" variant="outlined" auto-grow max-rows="12" class="memo"></v-textarea>
@@ -34,10 +34,7 @@ watch(() => mindStore.nodeMenu.node.topic, (newTopic, oldTopic) => {
 
   if (typeof newTopic === "string") {
     mindStore.mind.currentNode.nodeObj.topic = newTopic
-    mindStore.mind.bus.fire("operation", {
-      name: "finishEdit",
-      obj: mindStore.mind.currentNode.nodeObj
-    })
+    mindStore.mind.reshapeNode(mindStore.mind.currentNode, { topic: newTopic })
   }
 });
 
@@ -47,6 +44,21 @@ watch(() => mindStore.nodeMenu.node.tags, (newTags, oldTags) => {
   if (typeof newTags === "string") {
     const newTagsArray = newTags.split(",")
     mindStore.mind.reshapeNode(mindStore.mind.currentNode, { tags: newTagsArray.filter(tag => tag.trim()) })
+  }
+});
+
+watch(() => mindStore.nodeMenu.node.icons, (newIcons, oldIcons) => {
+  if (!mindStore.mind.currentNode) return
+  if (typeof newIcons === "string") {
+    const newIconsArray = newIcons.split(",")
+    mindStore.mind.reshapeNode(mindStore.mind.currentNode, { icons: newIconsArray.filter(icon => icon) })
+  }
+});
+
+watch(() => mindStore.nodeMenu.node.hyperLink, (newLink, oldLink) => {
+  if (!mindStore.mind.currentNode) return
+  if (typeof newLink === "string") {
+    mindStore.mind.reshapeNode(mindStore.mind.currentNode, { hyperLink: newLink })
   }
 });
 
