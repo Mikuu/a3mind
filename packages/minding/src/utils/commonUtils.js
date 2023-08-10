@@ -11,6 +11,13 @@ export const checkAndReturnStyleObject = styleObject => {
   return {};
 };
 
+export const getDefaultNodeStyle = () => {
+  return {
+    fontColor: '#777777',
+    backgroundColor: 'transparent'
+  }
+}
+
 export const getNodeWithInitialAttributes = () => {
   return {
     // Elixir default attributes
@@ -18,7 +25,7 @@ export const getNodeWithInitialAttributes = () => {
     root: null,
     tags: null,
     memo: null,
-    style: null,
+    style: getDefaultNodeStyle(),
     topic: null,
     icons: null,
     direction: null,

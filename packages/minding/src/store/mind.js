@@ -8,7 +8,7 @@ import { extractViewData, flattenNodeData, nodesToMindData } from "@/utils/dataU
 import { keycloak } from "@/plugins/keycloak";
 import * as ambClient from "@/clients/ambClient";
 import { latteTheme } from "@/utils/themeUtils";
-import { getNodeWithInitialAttributes, assignNodeData } from "@/utils/commonUtils";
+import { getNodeWithInitialAttributes, assignNodeData, getDefaultNodeStyle } from "@/utils/commonUtils";
 
 const SYNC_MIND_DATA_INTERVAL = 5000;
 
@@ -41,6 +41,9 @@ const nodeMenuPlugin = (mind, state) => {
       if (!clickEvent) return
       state.nodeMenu.display = true;
       state.nodeMenu.node = { ...nodeObj };
+
+      const defaultNodeStyle = getDefaultNodeStyle();
+      state.nodeMenu.node.style.fontColor ||= defaultNodeStyle.fontColor;
 
       // not to retrieve from backend, in case UI has unsubmitted data.
       // ambClient.getNode(keycloak.token, nodeObj.id)

@@ -9,4 +9,7 @@ module.exports = {
     'eslint:recommended',
     'plugin:jest/recommended',
   ],
+  "parserOptions": {
+    "ecmaVersion": 2021
+  },
 }
