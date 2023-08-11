@@ -33,8 +33,9 @@ watch(() => mindStore.nodeMenu.node.topic, (newTopic, oldTopic) => {
   if (!mindStore.mind.currentNode) return
 
   if (typeof newTopic === "string") {
-    mindStore.mind.currentNode.nodeObj.topic = newTopic
-    mindStore.mind.reshapeNode(mindStore.mind.currentNode, { topic: newTopic })
+    const topic = newTopic ? newTopic.trim() : "new node";
+    mindStore.mind.currentNode.nodeObj.topic = topic
+    mindStore.mind.reshapeNode(mindStore.mind.currentNode, { topic: topic })
   }
 });
 
