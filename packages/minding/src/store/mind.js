@@ -43,7 +43,10 @@ const nodeMenuPlugin = (mind, state) => {
       state.nodeMenu.node = { ...nodeObj };
 
       const defaultNodeStyle = getDefaultNodeStyle();
-      state.nodeMenu.node.style.fontColor ||= defaultNodeStyle.fontColor;
+      state.nodeMenu.node.style.color ||= defaultNodeStyle.color;
+      state.nodeMenu.node.style.background ||= defaultNodeStyle.background;
+      state.nodeMenu.node.style.fontSize ||= defaultNodeStyle.fontSize;
+
 
       // not to retrieve from backend, in case UI has unsubmitted data.
       // ambClient.getNode(keycloak.token, nodeObj.id)
@@ -125,8 +128,12 @@ export const useMindStore = defineStore('mind', {
       const rootNode = MindElixir.new("");
 
       this.mind = new MindElixir(options);
+
+      // The original nodeMenu hardcoded limited color, cannot support customized color and throw errors, thus
+      //  it cannot be use together with my nodeMenuPlugin.
       // this.mind.install(nodeMenu);
-      this.mind.install(nodeMenuLocal);
+      // this.mind.install(nodeMenuLocal);
+
       this.mind.install(nodeMenuPlugin(this.mind, this));
       this.mind.init(rootNode);
       this.mind.bus.addListener('operation', eventListener);

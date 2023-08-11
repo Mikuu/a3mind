@@ -5,9 +5,11 @@
         <p class="font-weight-light">Font color</p>
         <v-menu location="end" :close-on-content-click="false">
           <template v-slot:activator="{ props }">
-            <v-btn v-bind="props" elevation="0" icon="mdi-palette-outline" class="ml-2 palette" :color="mindStore.nodeMenu.node.style.fontColor"></v-btn>
+            <v-btn v-bind="props" elevation="0" icon="mdi-palette-outline" class="ml-2 palette"
+                   :color="mindStore.nodeMenu.node.style.color"></v-btn>
           </template>
-          <v-color-picker v-model="mindStore.nodeMenu.node.style.fontColor" elevation="2" class="ma-2" show-swatches swatches-max-height="240px"></v-color-picker>
+          <v-color-picker v-model="mindStore.nodeMenu.node.style.color"
+                          elevation="2" class="ma-2" show-swatches swatches-max-height="240px"></v-color-picker>
         </v-menu>
       </div>
 
@@ -15,14 +17,16 @@
         <p class="font-weight-light">Background color</p>
         <v-menu location="end" :close-on-content-click="false">
           <template v-slot:activator="{ props }">
-            <v-btn v-bind="props" elevation="0" icon="mdi-palette-outline" class="ml-2 palette" :color="backgroundColor"></v-btn>
+            <v-btn v-bind="props" elevation="0" icon="mdi-palette-outline" class="ml-2 palette"
+                   :color="mindStore.nodeMenu.node.style.background"></v-btn>
           </template>
-          <v-color-picker v-model="backgroundColor" elevation="2" class="ma-2" show-swatches swatches-max-height="240px"></v-color-picker>
+          <v-color-picker v-model="mindStore.nodeMenu.node.style.background"
+                          elevation="2" class="ma-2" show-swatches swatches-max-height="240px"></v-color-picker>
         </v-menu>
       </div>
     </div>
 
-    <v-select clearable label="Font size" :items="fontSizes" variant="outlined"></v-select>
+    <v-select clearable v-model="mindStore.nodeMenu.node.style.fontSize" label="Font size" :items="fontSizes" variant="outlined"></v-select>
     <v-select clearable label="Font weight" :items="fontWeights" variant="outlined"></v-select>
     <v-select clearable label="Text decoration" :items="textDecoration" variant="outlined"></v-select>
 
@@ -34,7 +38,7 @@ import { onMounted, ref, watch } from 'vue';
 import { useMindStore } from "@/store/mind";
 
 const mindStore = useMindStore();
-const fontSizes = ['California', 'Colorado', 'Florida', 'Georgia', 'Texas', 'Wyoming'];
+const fontSizes = ['unset', 'small', 'smaller', 'medium', 'large', 'larger', 'x-large', 'xx-large', 'xxx-large'];
 const fontWeights = [
   'Black text',
   'Bold text',
@@ -53,31 +57,40 @@ onMounted(() => {
   console.log(`FBI --> onMounted nodeMenuStyle starting`);
 })
 
-watch(() => mindStore.nodeMenu.node.style, (newStyle, oldStyle) => {
-  console.log(`FBI --> nodeStyle changed:`);
-  console.log(oldStyle);
-  console.log(newStyle);
-  console.log(`-----------------------`);
-
+watch(() => mindStore.nodeMenu.node.style.color, (newColor, oldColor) => {
   if (!mindStore.mind.currentNode) return
-  if (typeof newStyle === "object") {
-    mindStore.mind.reshapeNode(mindStore.mind.currentNode, { style: newStyle });
-  }
+  // const currentNodeStyle = { ...mindStore.mind.currentNode.style };
+  // currentNodeStyle.color = newColor;
+  mindStore.mind.reshapeNode(mindStore.mind.currentNode, { style: { color: newColor } });
 });
 
-watch(() => mindStore.nodeMenu.node.style.fontColor, (newFontColor, oldFontColor) => {
-  console.log(`FBI --> nodeStyle fontColor changed:`);
-  console.log(oldFontColor);
-  console.log(newFontColor);
-  console.log(`-----------------------`);
-
+watch(() => mindStore.nodeMenu.node.style.background, (newBackground, oldBackground) => {
   if (!mindStore.mind.currentNode) return
-  const currentNodeStyle = { ...mindStore.mind.currentNode.style };
-  currentNodeStyle.fontColor = newFontColor;
-  mindStore.mind.reshapeNode(mindStore.mind.currentNode, { style: { fontColor: newFontColor } });
+  // const currentNodeStyle = { ...mindStore.mind.currentNode.style };
+  // currentNodeStyle.background = newBackground;
+  mindStore.mind.reshapeNode(mindStore.mind.currentNode, { style: { background: newBackground } });
 });
 
+// watch change of font size
+watch(() => mindStore.nodeMenu.node.style.fontSize, (newFontSize, oldFontSize) => {
+  if (!mindStore.mind.currentNode) return
+  // const currentNodeStyle = { ...mindStore.mind.currentNode.style };
+  // currentNodeStyle.fontSize = newFontSize;
+  // mindStore.mind.reshapeNode(mindStore.mind.currentNode, { style: { fontSize: newFontSize } });
 
+
+  console.log(`FBI --> nodeMenuStyle watch change currentNode`);
+  console.log(mindStore.mind.currentNode);
+
+  // const currentNodeClass = mindStore.mind.currentNode.className;
+  mindStore.mind.currentNode.className += ' font-weight-black';
+  mindStore.mind.reshapeNode(mindStore.mind.currentNode, { styleClass: 'font-weight-black' });
+
+  /**
+   * mind-elixir-core cleared all className when unselect node. Need to figure out how to solve this to support adding className.
+   * **/
+
+});
 
 </script>
 

@@ -13,8 +13,9 @@ export const checkAndReturnStyleObject = styleObject => {
 
 export const getDefaultNodeStyle = () => {
   return {
-    fontColor: '#777777',
-    backgroundColor: 'transparent'
+    color: '#777777',
+    background: '#FFFFFF',
+    fontSize: 'unset',
   }
 }
 
