@@ -1,6 +1,6 @@
 // Utilities
 import { defineStore } from 'pinia'
-import MindElixir from "mind-elixir";
+import MindElixir, { E } from 'mind-elixir'
 import nodeMenu from '@mind-elixir/node-menu';
 import nodeMenuLocal from '@/mindPlugins/testMenu/testMenu';
 import { useLocalStorage } from '@vueuse/core';
@@ -8,7 +8,7 @@ import { extractViewData, flattenNodeData, nodesToMindData } from "@/utils/dataU
 import { keycloak } from "@/plugins/keycloak";
 import * as ambClient from "@/clients/ambClient";
 import { latteTheme } from "@/utils/themeUtils";
-import { getNodeWithInitialAttributes, assignNodeData, getDefaultNodeStyle } from "@/utils/commonUtils";
+import { getNodeWithInitialAttributes, assignNodeData, getDefaultNodeStyle, removeClass } from "@/utils/commonUtils";
 
 const SYNC_MIND_DATA_INTERVAL = 5000;
 
@@ -18,7 +18,17 @@ const nodeMenuPlugin = (mind, state) => {
 
     // handle node selection
     mind.bus.addListener("unselectNode", function() {
+      if (!state.nodeMenu.display) return
+
       state.nodeMenu.display = false;
+
+      if (state.nodeMenu.classNameCache) {
+        const selectedNode = E(state.nodeMenu.currentNodeId);
+        selectedNode.className = removeClass(state.nodeMenu.classNameCache, 'selected');
+        state.nodeMenu.classNameCache = null;
+      }
+
+      state.nodeMenu.currentNodeId = null;
     })
 
     mind.bus.addListener("selectNode", function(nodeObj, clickEvent) {
@@ -42,11 +52,24 @@ const nodeMenuPlugin = (mind, state) => {
       state.nodeMenu.display = true;
       state.nodeMenu.node = { ...nodeObj };
 
+      console.log(`selectNode, mind node: `);
+      console.log(state.nodeMenu.node);
+
       const defaultNodeStyle = getDefaultNodeStyle();
       state.nodeMenu.node.style.color ||= defaultNodeStyle.color;
       state.nodeMenu.node.style.background ||= defaultNodeStyle.background;
       state.nodeMenu.node.style.fontSize ||= defaultNodeStyle.fontSize;
+      state.nodeMenu.node.style.fontWeight ||= defaultNodeStyle.fontWeight;
 
+      state.nodeMenu.currentNodeId = nodeObj.id;
+
+      console.log(`selectNode, after styling:`);
+      console.log(state.mind.currentNode);
+      console.log(state.nodeMenu.node);
+
+      if (state.nodeMenu.node.a3ClassName) {
+        state.mind.currentNode.className += state.nodeMenu.node.a3ClassName;
+      }
 
       // not to retrieve from backend, in case UI has unsubmitted data.
       // ambClient.getNode(keycloak.token, nodeObj.id)
@@ -71,8 +94,10 @@ export const useMindStore = defineStore('mind', {
       removedNodesIds: []
     }),
     nodeMenu: {
+      display: null,
       node: getNodeWithInitialAttributes(),
-      display: null
+      currentNodeId: null,
+      classNameCache: null,
     }
   }),
 

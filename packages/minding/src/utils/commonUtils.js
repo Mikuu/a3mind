@@ -15,7 +15,8 @@ export const getDefaultNodeStyle = () => {
   return {
     color: '#777777',
     background: '#FFFFFF',
-    fontSize: 'unset',
+    fontSize: 15,
+    fontWeight: 'font-weight-regular'
   }
 }
 
@@ -37,8 +38,38 @@ export const getNodeWithInitialAttributes = () => {
     parentId: null,
     nodeType: null,
     testTitle: null,
-    testDescription: null
+    testDescription: null,
+    a3ClassName: null
   }
+}
+
+export const updateClassName = (currentClasses, classNames, className) => {
+  const classList = currentClasses.split(' ');
+
+  if (classList.includes(className)) {
+    classList.splice(classList.indexOf(className), 1);
+  }
+
+  classNames.forEach(cls => {
+    if (classList.includes(cls)) {
+      classList.splice(classList.indexOf(cls), 1);
+    }
+  });
+
+  classList.push(className);
+  const updatedClassName = classList.join(' ');
+  return updatedClassName;
+}
+
+export const removeClass = (currentClasses, classToRemove) => {
+  const classList = currentClasses.split(' ');
+
+  if (classList.includes(classToRemove)) {
+    classList.splice(classList.indexOf(classToRemove), 1);
+  }
+
+  const updatedClassName = classList.join(' ');
+  return updatedClassName;
 }
 
 export const assignNodeData = (nodeData) => {
