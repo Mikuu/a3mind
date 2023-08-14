@@ -1,3 +1,5 @@
+import { getDefaultNodeStyle } from "@/utils/styleUtils";
+
 /** the current mind-elixir-core has a bug that cannot return correct style value of root node, therefor it need
  * be checked if the style object can be stringify successfully. **/
 export const checkAndReturnStyleObject = styleObject => {
@@ -10,15 +12,6 @@ export const checkAndReturnStyleObject = styleObject => {
 
   return {};
 };
-
-export const getDefaultNodeStyle = () => {
-  return {
-    color: '#777777',
-    background: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: 'font-weight-regular'
-  }
-}
 
 export const getNodeWithInitialAttributes = () => {
   return {
@@ -41,35 +34,6 @@ export const getNodeWithInitialAttributes = () => {
     testDescription: null,
     a3ClassName: null
   }
-}
-
-export const updateClassName = (currentClasses, classNames, className) => {
-  const classList = currentClasses.split(' ');
-
-  if (classList.includes(className)) {
-    classList.splice(classList.indexOf(className), 1);
-  }
-
-  classNames.forEach(cls => {
-    if (classList.includes(cls)) {
-      classList.splice(classList.indexOf(cls), 1);
-    }
-  });
-
-  classList.push(className);
-  const updatedClassName = classList.join(' ');
-  return updatedClassName;
-}
-
-export const removeClass = (currentClasses, classToRemove) => {
-  const classList = currentClasses.split(' ');
-
-  if (classList.includes(classToRemove)) {
-    classList.splice(classList.indexOf(classToRemove), 1);
-  }
-
-  const updatedClassName = classList.join(' ');
-  return updatedClassName;
 }
 
 export const assignNodeData = (nodeData) => {

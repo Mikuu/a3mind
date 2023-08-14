@@ -1,33 +1,34 @@
-// Utilities
 import { defineStore } from 'pinia'
 import MindElixir, { E } from 'mind-elixir'
-import nodeMenu from '@mind-elixir/node-menu';
-import nodeMenuLocal from '@/mindPlugins/testMenu/testMenu';
 import { useLocalStorage } from '@vueuse/core';
 import { extractViewData, flattenNodeData, nodesToMindData } from "@/utils/dataUtils";
 import { keycloak } from "@/plugins/keycloak";
 import * as ambClient from "@/clients/ambClient";
 import { latteTheme } from "@/utils/themeUtils";
-import { getNodeWithInitialAttributes, assignNodeData, getDefaultNodeStyle, removeClass } from "@/utils/commonUtils";
+import { getNodeWithInitialAttributes, assignNodeData } from "@/utils/commonUtils";
+import * as styleUtils from "@/utils/styleUtils";
 
 const SYNC_MIND_DATA_INTERVAL = 5000;
 
-const nodeMenuPlugin = (mind, state) => {
+const nodeMenuPlugin = (state) => {
   return (mind) => {
     console.log("install node menu adv")
+
+    const keepSelectedNodeClassName = (selectedNodeId) => {
+      if (state.nodeMenu.node.a3ClassName) {
+        const selectedNode = E(selectedNodeId);
+        selectedNode.className = styleUtils.removeClass(state.nodeMenu.node.a3ClassName, 'selected');
+      }
+    };
 
     // handle node selection
     mind.bus.addListener("unselectNode", function() {
       if (!state.nodeMenu.display) return
 
       state.nodeMenu.display = false;
+      keepSelectedNodeClassName(state.nodeMenu.currentNodeId);
 
-      if (state.nodeMenu.classNameCache) {
-        const selectedNode = E(state.nodeMenu.currentNodeId);
-        selectedNode.className = removeClass(state.nodeMenu.classNameCache, 'selected');
-        state.nodeMenu.classNameCache = null;
-      }
-
+      state.nodeMenu.node = null;
       state.nodeMenu.currentNodeId = null;
     })
 
@@ -50,12 +51,19 @@ const nodeMenuPlugin = (mind, state) => {
 
       if (!clickEvent) return
       state.nodeMenu.display = true;
+
+      // handle when menu is open, not unselect the current node, directly select next node.
+      if (state.nodeMenu.currentNodeId && nodeObj.id !== state.nodeMenu.currentNodeId) {
+        keepSelectedNodeClassName(state.nodeMenu.currentNodeId);
+      }
+
+      // select or switch node.
       state.nodeMenu.node = { ...nodeObj };
 
       console.log(`selectNode, mind node: `);
       console.log(state.nodeMenu.node);
 
-      const defaultNodeStyle = getDefaultNodeStyle();
+      const defaultNodeStyle = styleUtils.getDefaultNodeStyle();
       state.nodeMenu.node.style.color ||= defaultNodeStyle.color;
       state.nodeMenu.node.style.background ||= defaultNodeStyle.background;
       state.nodeMenu.node.style.fontSize ||= defaultNodeStyle.fontSize;
@@ -63,12 +71,8 @@ const nodeMenuPlugin = (mind, state) => {
 
       state.nodeMenu.currentNodeId = nodeObj.id;
 
-      console.log(`selectNode, after styling:`);
-      console.log(state.mind.currentNode);
-      console.log(state.nodeMenu.node);
-
-      if (state.nodeMenu.node.a3ClassName) {
-        state.mind.currentNode.className += state.nodeMenu.node.a3ClassName;
+      if (state.mind.currentNode.a3ClassName) {
+        state.mind.currentNode.className = styleUtils.appendClasses(state.mind.currentNode.className, state.mind.currentNode.a3ClassName);
       }
 
       // not to retrieve from backend, in case UI has unsubmitted data.
@@ -159,7 +163,7 @@ export const useMindStore = defineStore('mind', {
       // this.mind.install(nodeMenu);
       // this.mind.install(nodeMenuLocal);
 
-      this.mind.install(nodeMenuPlugin(this.mind, this));
+      this.mind.install(nodeMenuPlugin(this));
       this.mind.init(rootNode);
       this.mind.bus.addListener('operation', eventListener);
     },

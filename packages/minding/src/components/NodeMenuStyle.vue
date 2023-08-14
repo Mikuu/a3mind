@@ -36,10 +36,9 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue';
 import { useMindStore } from "@/store/mind";
-import { updateClassName } from "@/utils/commonUtils";
+import * as styleUtils from "@/utils/styleUtils";
 
 const mindStore = useMindStore();
-// const fontSizes = ['unset', 'small', 'smaller', 'medium', 'large', 'larger', 'x-large', 'xx-large', 'xxx-large'];
 const fontSizes = [10, 15, 24, 32];
 const fontWeights = [
   'font-weight-black',
@@ -75,22 +74,17 @@ watch(() => mindStore.nodeMenu.node.style.fontSize, (newFontSize, oldFontSize) =
 watch(() => mindStore.nodeMenu.node.style.fontWeight, (newFontWeight, oldFontWeight) => {
   if (!mindStore.mind.currentNode) return
 
-  /**
-   * mind-elixir-core cleared all className when unselect node. Need to figure out how to solve this to support adding className.
-   * **/
-  // update node to change the display, currentNode is html element.
-  mindStore.mind.currentNode.className = updateClassName(mindStore.mind.currentNode.className, fontWeights, newFontWeight);
+  // Update node to change the display, currentNode is a html element.
+  mindStore.mind.currentNode.className = styleUtils.updateClassName(mindStore.mind.currentNode.className, fontWeights, newFontWeight);
 
-  // store into mind to enable re-select when next time click on the node before saving, consumed in selectNode listener.
-  // mindStore.nodeMenu.node reference to node data in mind-elixir.
-  mindStore.nodeMenu.node.a3ClassName = mindStore.mind.currentNode.className;
+  // Store into stare.nodeMenu, just for cache, because mind-elixir will hardcode className='' when unselect node, so this
+  // cache can be consumed in unselectNode listener to keep the className, and there is no currentNode object when unselect
+  // listener is invoked, so this cache is mandatory.
+  mindStore.nodeMenu.node.a3ClassName = styleUtils.removeClass(mindStore.mind.currentNode.className, 'selected');
 
-  // store into stare.nodeMenu, just for cache, because mind-elixir will hardcode className='' when unselect node, so this
-  // cache can be consumed in unselectNode listener to keep the className.
-  mindStore.nodeMenu.classNameCache = mindStore.mind.currentNode.className;
-
-  console.log(`watching fontWeight`);
-  console.log(mindStore.nodeMenu.node);
+  // Store into mind to enable re-select when next time click on the node before saving, consumed in selectNode listener.
+  // will be saved when pushed to backend.
+  mindStore.mind.reshapeNode(mindStore.mind.currentNode, { a3ClassName: mindStore.nodeMenu.node.a3ClassName });
 });
 
 
