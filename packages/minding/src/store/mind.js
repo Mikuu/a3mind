@@ -14,22 +14,27 @@ const nodeMenuPlugin = (state) => {
   return (mind) => {
     console.log("install node menu adv")
 
-    const keepSelectedNodeClassName = (selectedNodeId) => {
-      if (state.nodeMenu.node.a3ClassName) {
-        const selectedNode = E(selectedNodeId);
-        selectedNode.className = styleUtils.removeClass(state.nodeMenu.node.a3ClassName, 'selected');
+    mind.bus.addListener('operation', function(operation) {
+      switch (operation.name) {
+        case "addChild":
+        case "insertSibling":
+        case "insertParent":
+
+          state.nodeMenu.display = false;
+          break;
+
+        case "removeNode":
+          state.nodeMenu.display = false;
+          break;
       }
-    };
+    })
 
     // handle node selection
     mind.bus.addListener("unselectNode", function() {
       if (!state.nodeMenu.display) return
 
       state.nodeMenu.display = false;
-      keepSelectedNodeClassName(state.nodeMenu.currentNodeId);
-
       state.nodeMenu.node = null;
-      state.nodeMenu.currentNodeId = null;
     })
 
     mind.bus.addListener("selectNode", function(nodeObj, clickEvent) {
@@ -48,41 +53,40 @@ const nodeMenuPlugin = (state) => {
        * nodeObj.parent
        * nodeObj.direction
        * **/
-
+      if (nodeObj.root) return;
       if (!clickEvent) return
       state.nodeMenu.display = true;
-
-      // handle when menu is open, not unselect the current node, directly select next node.
-      if (state.nodeMenu.currentNodeId && nodeObj.id !== state.nodeMenu.currentNodeId) {
-        keepSelectedNodeClassName(state.nodeMenu.currentNodeId);
-      }
 
       // select or switch node.
       state.nodeMenu.node = { ...nodeObj };
 
-      console.log(`selectNode, mind node: `);
+      console.log(`selectNode[node data]: `);
       console.log(state.nodeMenu.node);
 
-      const defaultNodeStyle = styleUtils.getDefaultNodeStyle();
-      state.nodeMenu.node.style.color ||= defaultNodeStyle.color;
-      state.nodeMenu.node.style.background ||= defaultNodeStyle.background;
-      state.nodeMenu.node.style.fontSize ||= defaultNodeStyle.fontSize;
-      state.nodeMenu.node.style.fontWeight ||= defaultNodeStyle.fontWeight;
+      /**
+       * state.mind.currentNode.className can be used to update the element class, but mind-elixir-core has some hardcode
+       * work which will override the class name, that it set className='selected' at selectNode event, and set
+       * className='' at unselectNode event, similarly, addChild, insertParent and insertSibling also impacts on it,
+       * additionally, when reload data from backend, customized style class will not be applied, it needs use E() to
+       * iterate all nodes returned by mind.getData() to update the class name, but it may cause performance issue,
+       * thus it needs lots of works to make customized style class work.
+       */
+      console.log(`selectNode[node element]: `);
+      console.log(state.mind.currentNode);
+
+      const defaultNode = getNodeWithInitialAttributes();
+      if (!state.nodeMenu.node.style) {
+        // handle newly created node, it doesn't have style object.
+        state.nodeMenu.node.style = defaultNode.style;
+      }
+      state.nodeMenu.node.style.color ||= defaultNode.style.color;
+      state.nodeMenu.node.style.background ||= defaultNode.style.background;
+      state.nodeMenu.node.style.fontSize ||= defaultNode.style.fontSize;
+      state.nodeMenu.node.style.fontWeight ||= defaultNode.style.fontWeight;
+
+      state.nodeMenu.node.nodeType ||= defaultNode.nodeType;
 
       state.nodeMenu.currentNodeId = nodeObj.id;
-
-      if (state.mind.currentNode.a3ClassName) {
-        state.mind.currentNode.className = styleUtils.appendClasses(state.mind.currentNode.className, state.mind.currentNode.a3ClassName);
-      }
-
-      // not to retrieve from backend, in case UI has unsubmitted data.
-      // ambClient.getNode(keycloak.token, nodeObj.id)
-      //   .then(response => {
-      //     state.nodeMenu.node = response;
-      //   })
-      //   .catch(reason => {
-      //     console.error(reason);
-      //   });
     })
   }
 }
@@ -200,18 +204,13 @@ export const useMindStore = defineStore('mind', {
     },
 
     async pullMindData(succeedHandler=null, failedHandler=null) {
-      // const viewDataResponse = await ambClient.getView(keycloak.token, this.vid);
-
       /** pulling data from backend **/
       ambClient.fetchNodeBulk(keycloak.token, this.pid, this.vid)
         .then(async response => {
           const mindData = nodesToMindData(response.nodes);
-          // console.log(`FBI --> response:`);
-          // console.log(response);
-          // console.log(response.nodes);
-          // console.log(mindData);
 
           await this.loadBackendMindDataOrInitializeNewMind(this.vid, mindData);
+
           if (typeof succeedHandler === 'function') succeedHandler();
 
         })
@@ -234,9 +233,6 @@ export const useMindStore = defineStore('mind', {
 
     async loadBackendMindDataOrInitializeNewMind(vid, mindData) {
       const viewDataResponse = await ambClient.getView(keycloak.token, vid);
-
-      // console.log(`FBI --> mindData: `);
-      // console.log(mindData);
 
       if (mindData) {
         this.loadMindData({

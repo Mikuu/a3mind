@@ -36,19 +36,12 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue';
 import { useMindStore } from "@/store/mind";
+import { checkAndAppendOperationId } from "@/utils/commonUtils";
 import * as styleUtils from "@/utils/styleUtils";
 
 const mindStore = useMindStore();
 const fontSizes = [10, 15, 24, 32];
-const fontWeights = [
-  'font-weight-black',
-  'font-weight-bold',
-  'font-weight-medium',
-  'font-weight-regular',
-  'font-weight-light',
-  'font-weight-thin',
-  'font-italic'
-];
+const fontWeights = ['normal', 'bold', 'lighter'];
 const textDecoration = ['none', 'underline', 'overline', 'line-through'];
 
 onMounted(() => {
@@ -58,33 +51,41 @@ onMounted(() => {
 watch(() => mindStore.nodeMenu.node.style.color, (newColor, oldColor) => {
   if (!mindStore.mind.currentNode) return
   mindStore.mind.reshapeNode(mindStore.mind.currentNode, { style: { color: newColor } });
+
+  checkAndAppendOperationId(mindStore.mindOperationStorage.updatedNodesIds, mindStore.mind.currentNode.id);
 });
 
 watch(() => mindStore.nodeMenu.node.style.background, (newBackground, oldBackground) => {
   if (!mindStore.mind.currentNode) return
   mindStore.mind.reshapeNode(mindStore.mind.currentNode, { style: { background: newBackground } });
+
+  checkAndAppendOperationId(mindStore.mindOperationStorage.updatedNodesIds, mindStore.mind.currentNode.id);
 });
 
 // watch change of font size
 watch(() => mindStore.nodeMenu.node.style.fontSize, (newFontSize, oldFontSize) => {
   if (!mindStore.mind.currentNode) return
   mindStore.mind.reshapeNode(mindStore.mind.currentNode, { style: { fontSize: newFontSize } });
+
+  checkAndAppendOperationId(mindStore.mindOperationStorage.updatedNodesIds, mindStore.mind.currentNode.id);
 });
 
 watch(() => mindStore.nodeMenu.node.style.fontWeight, (newFontWeight, oldFontWeight) => {
   if (!mindStore.mind.currentNode) return
 
   // Update node to change the display, currentNode is a html element.
-  mindStore.mind.currentNode.className = styleUtils.updateClassName(mindStore.mind.currentNode.className, fontWeights, newFontWeight);
+  // mindStore.mind.currentNode.className = styleUtils.updateClassName(mindStore.mind.currentNode.className, fontWeights, newFontWeight);
 
   // Store into stare.nodeMenu, just for cache, because mind-elixir will hardcode className='' when unselect node, so this
   // cache can be consumed in unselectNode listener to keep the className, and there is no currentNode object when unselect
   // listener is invoked, so this cache is mandatory.
-  mindStore.nodeMenu.node.a3ClassName = styleUtils.removeClass(mindStore.mind.currentNode.className, 'selected');
+  // mindStore.nodeMenu.node.a3ClassName = styleUtils.removeClass(mindStore.mind.currentNode.className, 'selected');
 
   // Store into mind to enable re-select when next time click on the node before saving, consumed in selectNode listener.
   // will be saved when pushed to backend.
-  mindStore.mind.reshapeNode(mindStore.mind.currentNode, { a3ClassName: mindStore.nodeMenu.node.a3ClassName });
+  mindStore.mind.reshapeNode(mindStore.mind.currentNode, { style: { fontWeight: newFontWeight } });
+
+  checkAndAppendOperationId(mindStore.mindOperationStorage.updatedNodesIds, mindStore.mind.currentNode.id);
 });
 
 

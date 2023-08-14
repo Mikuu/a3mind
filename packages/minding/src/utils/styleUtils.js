@@ -3,7 +3,7 @@ export const getDefaultNodeStyle = () => {
     color: '#777777',
     background: '#FFFFFF',
     fontSize: 15,
-    fontWeight: 'font-weight-regular'
+    fontWeight: 'normal'
   }
 }
 export const updateClassName = (currentClasses, classNames, className) => {

@@ -29,10 +29,9 @@ export const getNodeWithInitialAttributes = () => {
 
     // a3mind attributes
     parentId: null,
-    nodeType: null,
+    nodeType: "general",
     testTitle: null,
-    testDescription: null,
-    a3ClassName: null
+    testDescription: null
   }
 }
 
@@ -57,3 +56,9 @@ export const assignNodeData = (nodeData) => {
     testDescription: nodeData.testDescription
   }
 }
+
+export const checkAndAppendOperationId = (operationIdList, operationId) => {
+  if (!operationIdList.includes(operationId)) {
+    operationIdList.push(operationId);
+  }
+};

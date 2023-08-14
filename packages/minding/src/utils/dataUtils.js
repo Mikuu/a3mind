@@ -13,6 +13,9 @@ export const extractNodeData = (parentId, obj) => {
     childrenIds: obj.children ? obj.children.map(child => child.id) : [],
     direction: obj.direction ? 1 : 0,
     parentId: parentId,
+    nodeType: obj.nodeType,
+    testTitle: obj.testTitle,
+    testDescription: obj.testDescription
   }
 };
 

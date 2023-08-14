@@ -24,9 +24,9 @@ import { useMindStore } from "@/store/mind";
 const mindStore = useMindStore();
 
 onMounted(() => {
-  console.log(`FBI --> onMounted nodeMenuGeneral starting`);
-  console.log(`FBI --> menuGeneral > mind.currentNode`);
-  console.log(mindStore.mind.currentNode);
+  // console.log(`FBI --> onMounted nodeMenuGeneral starting`);
+  // console.log(`FBI --> menuGeneral > mind.currentNode`);
+  // console.log(mindStore.mind.currentNode);
 })
 
 watch(() => mindStore.nodeMenu.node.topic, (newTopic, oldTopic) => {
