@@ -29,6 +29,11 @@ onMounted(() => {
   // console.log(mindStore.mind.currentNode);
 })
 
+watch(() => mindStore.nodeMenu.node.nodeType, (newType, oldType) => {
+  if (!mindStore.mind.currentNode) return
+  mindStore.mind.reshapeNode(mindStore.mind.currentNode, { nodeType: newType })
+});
+
 watch(() => mindStore.nodeMenu.node.topic, (newTopic, oldTopic) => {
   if (!mindStore.mind.currentNode) return
 

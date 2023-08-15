@@ -7,6 +7,7 @@ import * as ambClient from "@/clients/ambClient";
 import { latteTheme } from "@/utils/themeUtils";
 import { getNodeWithInitialAttributes, assignNodeData } from "@/utils/commonUtils";
 import * as styleUtils from "@/utils/styleUtils";
+import {makeStyleString} from "@/utils/styleUtils";
 
 const SYNC_MIND_DATA_INTERVAL = 5000;
 
@@ -15,13 +16,26 @@ const nodeMenuPlugin = (state) => {
     console.log("install node menu adv")
 
     mind.bus.addListener('operation', function(operation) {
+      const initializeA3Node = () => {
+        const childElement = E(operation.obj.id);
+        const defaultNode = getNodeWithInitialAttributes();
+        state.mind.reshapeNode(childElement, { style: defaultNode.style });
+        state.mind.reshapeNode(childElement, { nodeType: defaultNode.nodeType });
+      };
+
       switch (operation.name) {
-        case "addChild":
         case "insertSibling":
+          state.nodeMenu.display = false;
+          // initializeA3Node();
+          break;
         case "insertParent":
         case "beginEdit":
         case "removeNode":
           state.nodeMenu.display = false;
+          break;
+        case "addChild":
+          state.nodeMenu.display = false;
+          initializeA3Node();
           break;
       }
     })
@@ -71,18 +85,16 @@ const nodeMenuPlugin = (state) => {
       console.log(`selectNode[node element]: `);
       console.log(state.mind.currentNode);
 
-      const defaultNode = getNodeWithInitialAttributes();
-      if (!state.nodeMenu.node.style) {
-        // handle newly created node, it doesn't have style object.
-        state.nodeMenu.node.style = defaultNode.style;
-      }
-      state.nodeMenu.node.style.color ||= defaultNode.style.color;
-      state.nodeMenu.node.style.background ||= defaultNode.style.background;
-      state.nodeMenu.node.style.fontSize ||= defaultNode.style.fontSize;
-      state.nodeMenu.node.style.fontWeight ||= defaultNode.style.fontWeight;
-      state.nodeMenu.node.style.textDecoration ||= defaultNode.style.textDecoration;
-
-      state.nodeMenu.node.nodeType ||= defaultNode.nodeType;
+      // these code should not be necessary, because node attributes should be initialized when 'addChild' listener is
+      // invoked.
+      // if (!state.nodeMenu.node.nodeType) {
+      //   const defaultNode = getNodeWithInitialAttributes();
+      //   state.nodeMenu.node.style = defaultNode.style;
+      //   state.nodeMenu.node.nodeType ||= defaultNode.nodeType;
+      //
+      //   state.mind.reshapeNode(state.mind.currentNode, { style: state.nodeMenu.node.style });
+      //   state.mind.reshapeNode(state.mind.currentNode, { nodeType: state.nodeMenu.node.nodeType });
+      // }
 
       state.nodeMenu.currentNodeId = nodeObj.id;
     })
@@ -188,6 +200,9 @@ export const useMindStore = defineStore('mind', {
       const fullData = this.mind.getData();
       const viewData = extractViewData(this.vid, fullData);
       const updateNodes = flattenNodeData(fullData.nodeData, this.mindOperationStorage.updatedNodesIds);
+
+      console.log(`fullData: `);
+      console.log(fullData);
 
       /** saving to backend **/
       ambClient.updateNodeBulk(keycloak.token, this.pid, this.vid, updateNodes, this.mindOperationStorage.removedNodesIds)
