@@ -83,6 +83,7 @@ const nodeMenuPlugin = (state) => {
       state.nodeMenu.node.style.background ||= defaultNode.style.background;
       state.nodeMenu.node.style.fontSize ||= defaultNode.style.fontSize;
       state.nodeMenu.node.style.fontWeight ||= defaultNode.style.fontWeight;
+      state.nodeMenu.node.style.textDecoration ||= defaultNode.style.textDecoration;
 
       state.nodeMenu.node.nodeType ||= defaultNode.nodeType;
 
@@ -204,12 +205,26 @@ export const useMindStore = defineStore('mind', {
     },
 
     async pullMindData(succeedHandler=null, failedHandler=null) {
+      const applyA3Style = (nodes) => {
+        /**
+         * mind-elixir-core only apply style to fontSize, fontWeight, color and background, other customized style will
+         * not be applied at refreshing|loading data from backend, thus it needs to use E() to iterate all nodes to
+         * apply customized styling. However, the performance of this method is not validated with large amount of nodes,
+         * if it has performance issue, then consider not to use customized style.
+         * */
+        for (const node of nodes) {
+          const nodeElement = E(node.id);
+          nodeElement.style.cssText = styleUtils.makeStyleString(node.style);
+        }
+      };
+
       /** pulling data from backend **/
       ambClient.fetchNodeBulk(keycloak.token, this.pid, this.vid)
         .then(async response => {
           const mindData = nodesToMindData(response.nodes);
 
           await this.loadBackendMindDataOrInitializeNewMind(this.vid, mindData);
+          applyA3Style(response.nodes);
 
           if (typeof succeedHandler === 'function') succeedHandler();
 

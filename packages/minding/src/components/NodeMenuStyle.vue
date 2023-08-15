@@ -28,7 +28,7 @@
 
     <v-select clearable v-model="mindStore.nodeMenu.node.style.fontSize" label="Font size" :items="fontSizes" variant="outlined"></v-select>
     <v-select clearable v-model="mindStore.nodeMenu.node.style.fontWeight" label="Font weight" :items="fontWeights" variant="outlined"></v-select>
-    <v-select clearable label="Text decoration" :items="textDecoration" variant="outlined"></v-select>
+    <v-select clearable v-model="mindStore.nodeMenu.node.style.textDecoration" label="Text decoration" :items="textDecorations" variant="outlined"></v-select>
 
   </v-container>
 </template>
@@ -37,12 +37,9 @@
 import { onMounted, ref, watch } from 'vue';
 import { useMindStore } from "@/store/mind";
 import { checkAndAppendOperationId } from "@/utils/commonUtils";
-import * as styleUtils from "@/utils/styleUtils";
+import { fontSizes, fontWeights, textDecorations, setStyleProperty } from "@/utils/styleUtils";
 
 const mindStore = useMindStore();
-const fontSizes = [10, 15, 24, 32];
-const fontWeights = ['normal', 'bold', 'lighter'];
-const textDecoration = ['none', 'underline', 'overline', 'line-through'];
 
 onMounted(() => {
   console.log(`FBI --> onMounted nodeMenuStyle starting`);
@@ -72,18 +69,16 @@ watch(() => mindStore.nodeMenu.node.style.fontSize, (newFontSize, oldFontSize) =
 
 watch(() => mindStore.nodeMenu.node.style.fontWeight, (newFontWeight, oldFontWeight) => {
   if (!mindStore.mind.currentNode) return
-
-  // Update node to change the display, currentNode is a html element.
-  // mindStore.mind.currentNode.className = styleUtils.updateClassName(mindStore.mind.currentNode.className, fontWeights, newFontWeight);
-
-  // Store into stare.nodeMenu, just for cache, because mind-elixir will hardcode className='' when unselect node, so this
-  // cache can be consumed in unselectNode listener to keep the className, and there is no currentNode object when unselect
-  // listener is invoked, so this cache is mandatory.
-  // mindStore.nodeMenu.node.a3ClassName = styleUtils.removeClass(mindStore.mind.currentNode.className, 'selected');
-
-  // Store into mind to enable re-select when next time click on the node before saving, consumed in selectNode listener.
-  // will be saved when pushed to backend.
   mindStore.mind.reshapeNode(mindStore.mind.currentNode, { style: { fontWeight: newFontWeight } });
+
+  checkAndAppendOperationId(mindStore.mindOperationStorage.updatedNodesIds, mindStore.mind.currentNode.id);
+});
+
+watch(() => mindStore.nodeMenu.node.style.textDecoration, (newTextDecoration, oldTextDecoration) => {
+  if (!mindStore.mind.currentNode) return
+  mindStore.mind.currentNode.style.cssText = setStyleProperty(
+    mindStore.mind.currentNode.style.cssText, "text-decoration", newTextDecoration);
+  mindStore.mind.reshapeNode(mindStore.mind.currentNode, { style: { textDecoration: newTextDecoration } });
 
   checkAndAppendOperationId(mindStore.mindOperationStorage.updatedNodesIds, mindStore.mind.currentNode.id);
 });
