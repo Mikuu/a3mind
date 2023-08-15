@@ -7,6 +7,7 @@ import * as ambClient from "@/clients/ambClient";
 import { latteTheme } from "@/utils/themeUtils";
 import { getNodeWithInitialAttributes, assignNodeData } from "@/utils/commonUtils";
 import * as styleUtils from "@/utils/styleUtils";
+import { makeStyleString, checkAndAddDefaultNodeProperties } from "@/utils/styleUtils";
 
 const SYNC_MIND_DATA_INTERVAL = 5000;
 
@@ -16,13 +17,10 @@ const nodeMenuPlugin = (state) => {
 
     mind.bus.addListener('operation', function(operation) {
       switch (operation.name) {
-        case "addChild":
         case "insertSibling":
         case "insertParent":
-
-          state.nodeMenu.display = false;
-          break;
-
+        case "beginEdit":
+        case "addChild":
         case "removeNode":
           state.nodeMenu.display = false;
           break;
@@ -74,17 +72,24 @@ const nodeMenuPlugin = (state) => {
       console.log(`selectNode[node element]: `);
       console.log(state.mind.currentNode);
 
-      const defaultNode = getNodeWithInitialAttributes();
-      if (!state.nodeMenu.node.style) {
-        // handle newly created node, it doesn't have style object.
+      if (!state.nodeMenu.node.nodeType) {
+        /**
+         * This initialization handling is for the newly created node which doesn't have a3 properties. Ideally this
+         * initialization should be put at event listeners which create nodes, e.g. addChild, insertSibling and insertParent,
+         * however, when added to insertSibling and insertParent, the node on UI page lost editing focus, which is not
+         * user-friendly, thus have to initialize new node here when first clicking node to open the menu.
+         *
+         * There still has chance that new created nodes been saved to backend without clicking the menu, so when save
+         * data to backend, the saving implementation will check if nodes has a3 properties, if it doesn't, apply a3
+         * properties to nodes before saving.
+         * */
+        const defaultNode = getNodeWithInitialAttributes();
         state.nodeMenu.node.style = defaultNode.style;
-      }
-      state.nodeMenu.node.style.color ||= defaultNode.style.color;
-      state.nodeMenu.node.style.background ||= defaultNode.style.background;
-      state.nodeMenu.node.style.fontSize ||= defaultNode.style.fontSize;
-      state.nodeMenu.node.style.fontWeight ||= defaultNode.style.fontWeight;
+        state.nodeMenu.node.nodeType ||= defaultNode.nodeType;
 
-      state.nodeMenu.node.nodeType ||= defaultNode.nodeType;
+        state.mind.reshapeNode(state.mind.currentNode, { style: state.nodeMenu.node.style });
+        state.mind.reshapeNode(state.mind.currentNode, { nodeType: state.nodeMenu.node.nodeType });
+      }
 
       state.nodeMenu.currentNodeId = nodeObj.id;
     })
@@ -191,8 +196,19 @@ export const useMindStore = defineStore('mind', {
       const viewData = extractViewData(this.vid, fullData);
       const updateNodes = flattenNodeData(fullData.nodeData, this.mindOperationStorage.updatedNodesIds);
 
+      /**
+       * Newly created nodes has no a3 properties, e.g. nodeType, customized styles, so use this
+       * checkAndAddDefaultNodeProperties method check and apply default a3 properties to those new nodes which doesn't
+       * have them.
+       * */
+      const updatedNodesWithDefaultProperties = checkAndAddDefaultNodeProperties(updateNodes);
+
+      console.log(`fullData: `);
+      console.log(fullData);
+
       /** saving to backend **/
-      ambClient.updateNodeBulk(keycloak.token, this.pid, this.vid, updateNodes, this.mindOperationStorage.removedNodesIds)
+      ambClient.updateNodeBulk(
+        keycloak.token, this.pid, this.vid, updatedNodesWithDefaultProperties, this.mindOperationStorage.removedNodesIds)
         .then(() => {
           this.cleanMindOperationStorage();
           if (typeof succeedHandler === 'function') succeedHandler();
@@ -204,12 +220,26 @@ export const useMindStore = defineStore('mind', {
     },
 
     async pullMindData(succeedHandler=null, failedHandler=null) {
+      const applyA3Style = (nodes) => {
+        /**
+         * mind-elixir-core only apply style to fontSize, fontWeight, color and background, other customized style will
+         * not be applied at refreshing|loading data from backend, thus it needs to use E() to iterate all nodes to
+         * apply customized styling. However, the performance of this method is not validated with large amount of nodes,
+         * if it has performance issue, then consider not to use customized style.
+         * */
+        for (const node of nodes) {
+          const nodeElement = E(node.id);
+          nodeElement.style.cssText = styleUtils.makeStyleString(node.style);
+        }
+      };
+
       /** pulling data from backend **/
       ambClient.fetchNodeBulk(keycloak.token, this.pid, this.vid)
         .then(async response => {
           const mindData = nodesToMindData(response.nodes);
 
           await this.loadBackendMindDataOrInitializeNewMind(this.vid, mindData);
+          applyA3Style(response.nodes);
 
           if (typeof succeedHandler === 'function') succeedHandler();
 
