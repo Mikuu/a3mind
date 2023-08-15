@@ -1,3 +1,5 @@
+import {flattenNodeData} from "@/utils/dataUtils";
+
 export const fontSizes = [10, 15, 24, 32];
 export const fontWeights = ['normal', 'bold', 'lighter'];
 export const textDecorations = ['none', 'underline', 'overline', 'line-through'];
@@ -40,3 +42,25 @@ export const makeStyleString = (styleObj) => {
 
   return stylePairs.join('; ');
 };
+
+export const checkAndAddDefaultNodeProperties = flattedNodes => {
+  const defaultStyle = getDefaultNodeStyle();
+  const defaultNodeType = "general";
+
+  const processedNodes = flattedNodes.map(node => {
+    if (node.root) return node;
+
+    if (!node.style || Object.keys(node.style).length === 0) {
+      node.style = { ...defaultStyle };
+    }
+
+    if (!node.nodeType || typeof node.nodeType !== "string") {
+      node.nodeType = defaultNodeType;
+    }
+
+    return node;
+  });
+
+  return processedNodes;
+};
+

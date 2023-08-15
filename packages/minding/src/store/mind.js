@@ -7,7 +7,7 @@ import * as ambClient from "@/clients/ambClient";
 import { latteTheme } from "@/utils/themeUtils";
 import { getNodeWithInitialAttributes, assignNodeData } from "@/utils/commonUtils";
 import * as styleUtils from "@/utils/styleUtils";
-import {makeStyleString} from "@/utils/styleUtils";
+import { makeStyleString, checkAndAddDefaultNodeProperties } from "@/utils/styleUtils";
 
 const SYNC_MIND_DATA_INTERVAL = 5000;
 
@@ -16,26 +16,13 @@ const nodeMenuPlugin = (state) => {
     console.log("install node menu adv")
 
     mind.bus.addListener('operation', function(operation) {
-      const initializeA3Node = () => {
-        const childElement = E(operation.obj.id);
-        const defaultNode = getNodeWithInitialAttributes();
-        state.mind.reshapeNode(childElement, { style: defaultNode.style });
-        state.mind.reshapeNode(childElement, { nodeType: defaultNode.nodeType });
-      };
-
       switch (operation.name) {
         case "insertSibling":
-          state.nodeMenu.display = false;
-          // initializeA3Node();
-          break;
         case "insertParent":
         case "beginEdit":
+        case "addChild":
         case "removeNode":
           state.nodeMenu.display = false;
-          break;
-        case "addChild":
-          state.nodeMenu.display = false;
-          initializeA3Node();
           break;
       }
     })
@@ -85,16 +72,24 @@ const nodeMenuPlugin = (state) => {
       console.log(`selectNode[node element]: `);
       console.log(state.mind.currentNode);
 
-      // these code should not be necessary, because node attributes should be initialized when 'addChild' listener is
-      // invoked.
-      // if (!state.nodeMenu.node.nodeType) {
-      //   const defaultNode = getNodeWithInitialAttributes();
-      //   state.nodeMenu.node.style = defaultNode.style;
-      //   state.nodeMenu.node.nodeType ||= defaultNode.nodeType;
-      //
-      //   state.mind.reshapeNode(state.mind.currentNode, { style: state.nodeMenu.node.style });
-      //   state.mind.reshapeNode(state.mind.currentNode, { nodeType: state.nodeMenu.node.nodeType });
-      // }
+      if (!state.nodeMenu.node.nodeType) {
+        /**
+         * This initialization handling is for the newly created node which doesn't have a3 properties. Ideally this
+         * initialization should be put at event listeners which create nodes, e.g. addChild, insertSibling and insertParent,
+         * however, when added to insertSibling and insertParent, the node on UI page lost editing focus, which is not
+         * user-friendly, thus have to initialize new node here when first clicking node to open the menu.
+         *
+         * There still has chance that new created nodes been saved to backend without clicking the menu, so when save
+         * data to backend, the saving implementation will check if nodes has a3 properties, if it doesn't, apply a3
+         * properties to nodes before saving.
+         * */
+        const defaultNode = getNodeWithInitialAttributes();
+        state.nodeMenu.node.style = defaultNode.style;
+        state.nodeMenu.node.nodeType ||= defaultNode.nodeType;
+
+        state.mind.reshapeNode(state.mind.currentNode, { style: state.nodeMenu.node.style });
+        state.mind.reshapeNode(state.mind.currentNode, { nodeType: state.nodeMenu.node.nodeType });
+      }
 
       state.nodeMenu.currentNodeId = nodeObj.id;
     })
@@ -201,11 +196,19 @@ export const useMindStore = defineStore('mind', {
       const viewData = extractViewData(this.vid, fullData);
       const updateNodes = flattenNodeData(fullData.nodeData, this.mindOperationStorage.updatedNodesIds);
 
+      /**
+       * Newly created nodes has no a3 properties, e.g. nodeType, customized styles, so use this
+       * checkAndAddDefaultNodeProperties method check and apply default a3 properties to those new nodes which doesn't
+       * have them.
+       * */
+      const updatedNodesWithDefaultProperties = checkAndAddDefaultNodeProperties(updateNodes);
+
       console.log(`fullData: `);
       console.log(fullData);
 
       /** saving to backend **/
-      ambClient.updateNodeBulk(keycloak.token, this.pid, this.vid, updateNodes, this.mindOperationStorage.removedNodesIds)
+      ambClient.updateNodeBulk(
+        keycloak.token, this.pid, this.vid, updatedNodesWithDefaultProperties, this.mindOperationStorage.removedNodesIds)
         .then(() => {
           this.cleanMindOperationStorage();
           if (typeof succeedHandler === 'function') succeedHandler();

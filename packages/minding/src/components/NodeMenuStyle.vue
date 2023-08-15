@@ -26,9 +26,9 @@
       </div>
     </div>
 
-    <v-select clearable v-model="mindStore.nodeMenu.node.style.fontSize" label="Font size" :items="fontSizes" variant="outlined"></v-select>
-    <v-select clearable v-model="mindStore.nodeMenu.node.style.fontWeight" label="Font weight" :items="fontWeights" variant="outlined"></v-select>
-    <v-select clearable v-model="mindStore.nodeMenu.node.style.textDecoration" label="Text decoration" :items="textDecorations" variant="outlined"></v-select>
+    <v-select v-model="mindStore.nodeMenu.node.style.fontSize" label="Font size" :items="fontSizes" variant="outlined"></v-select>
+    <v-select v-model="mindStore.nodeMenu.node.style.fontWeight" label="Font weight" :items="fontWeights" variant="outlined"></v-select>
+    <v-select v-model="mindStore.nodeMenu.node.style.textDecoration" label="Text decoration" :items="textDecorations" variant="outlined"></v-select>
 
   </v-container>
 </template>
