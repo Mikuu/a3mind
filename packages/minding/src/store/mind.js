@@ -19,10 +19,7 @@ const nodeMenuPlugin = (state) => {
         case "addChild":
         case "insertSibling":
         case "insertParent":
-
-          state.nodeMenu.display = false;
-          break;
-
+        case "beginEdit":
         case "removeNode":
           state.nodeMenu.display = false;
           break;

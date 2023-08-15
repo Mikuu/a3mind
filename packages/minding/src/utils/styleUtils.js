@@ -4,7 +4,7 @@ export const textDecorations = ['none', 'underline', 'overline', 'line-through']
 export const getDefaultNodeStyle = () => {
   return {
     color: '#777777',
-    background: '#FFFFFF',
+    background: '#F6F6F6',
     fontSize: 15,
     fontWeight: 'normal',
     textDecoration: 'none',
