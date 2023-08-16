@@ -19,9 +19,20 @@ const elixirUuid = () => {
     return (new Date().getTime().toString(16) + Math.random().toString(16).substr(2)).substr(2, 16);
 };
 
+
+const idToTestId = (id) => {
+    return `TID${id.toUpperCase()}`;
+};
+
+const testIdToId = (testId) => {
+    return testId.replace('TID', '').toLowerCase();
+};
+
 module.exports = {
     projectUuid,
     viewUuid,
     nodeUuid,
-    elixirUuid
+    elixirUuid,
+    idToTestId,
+    testIdToId
 };

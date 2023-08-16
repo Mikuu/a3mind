@@ -67,6 +67,6 @@ export const idToTestId = (id) => {
   return `TID${id.toUpperCase()}`;
 };
 
-export const TestIdToId = (testId) => {
+export const testIdToId = (testId) => {
   return testId.replace('TID', '').toLowerCase();
 };
