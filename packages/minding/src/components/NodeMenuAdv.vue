@@ -26,7 +26,7 @@
 </template>
 
 <script setup>
-import {onMounted, ref} from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useMindStore } from "@/store/mind";
 import NodeMenuGeneral from "@/components/NodeMenuGeneral.vue";
 import NodeMenuStyle from "@/components/NodeMenuStyle.vue";
@@ -34,7 +34,15 @@ import NodeMenuTest from "@/components/NodeMenuTest";
 
 const mindStore = useMindStore();
 
-const tab = ref(null);
+const tab = ref("general");
+
+// switch tab to general when node type is not test.
+watch(() => mindStore.nodeMenu.node?.nodeType, (newType, oldType) => {
+  if (tab.value === "test" && newType !== "test") {
+    tab.value = "general";
+  }
+});
+
 
 const posX = ref(0);
 const posY = ref(0);
