@@ -62,3 +62,11 @@ export const checkAndAppendOperationId = (operationIdList, operationId) => {
     operationIdList.push(operationId);
   }
 };
+
+export const idToTestId = (id) => {
+  return `TID${id.toUpperCase()}`;
+};
+
+export const TestIdToId = (testId) => {
+  return testId.replace('TID', '').toLowerCase();
+};
