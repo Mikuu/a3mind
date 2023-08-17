@@ -38,23 +38,17 @@ const displayTest = computed(() => mindStore.nodeMenu.node.nodeType === 'test');
 const displayTestResult = computed(() => ['at-result', 'mt-result'].includes(mindStore.nodeMenu.node.nodeType));
 
 watch(() => mindStore.nodeMenu.currentNodeType, (newType, oldType) => {
-  if (['general', 'scenario'].includes(oldType) && newType === 'test') {
-    // 'general' & 'scenario' -> 'test';
+  if (['general', 'scenario'].includes(newType)) {
+    if (oldType === 'test') tab.value = "general";
+    if (['at-result', 'mt-result'].includes(oldType)) tab.value = "general";
+    if (oldType === null) tab.value = "general";
 
-  } else if (['general', 'scenario'].includes(oldType) && ['at-result', 'mt-result'].includes(newType)) {
-    tab.value = "test-result"; // 'general' & 'scenario' -> 'test-result';
+  } else if (newType === 'test') {
+    if (['at-result', 'mt-result', null].includes(oldType)) tab.value = "general";
 
-  } else if (oldType === 'test' && ['general', 'scenario'].includes(newType)) {
-    if (tab.value === "test") tab.value = "general"; // 'test' -> 'general' & 'scenario';
+  } else if (['at-result', 'mt-result'].includes(newType)) {
+    tab.value = "test-result";
 
-  } else if (oldType === 'test' && ['at-result', 'mt-result'].includes(newType)) {
-    tab.value = "test-result"; // 'test' -> 'test-result';
-
-  } else if (['at-result', 'mt-result'].includes(oldType) && ['general', 'scenario'].includes(newType)) {
-    if (tab.value === "test-result") tab.value = "general"; // 'test-result' -> 'general' & 'scenario';
-
-  } else if (['at-result', 'mt-result'].includes(oldType) && newType === 'test') {
-    if (tab.value === "test-result") tab.value = "general"; // 'test-result' -> 'test';
   }
 });
 
