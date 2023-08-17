@@ -33,6 +33,8 @@ const nodeMenuPlugin = (state) => {
 
       state.nodeMenu.display = false;
       state.nodeMenu.node = null;
+      state.nodeMenu.currentNodeId = null;
+      state.nodeMenu.currentNodeType = null;
     })
 
     mind.bus.addListener("selectNode", function(nodeObj, clickEvent) {
@@ -92,6 +94,7 @@ const nodeMenuPlugin = (state) => {
       }
 
       state.nodeMenu.currentNodeId = nodeObj.id;
+      state.nodeMenu.currentNodeType = nodeObj.nodeType;
     })
   }
 }
@@ -110,7 +113,7 @@ export const useMindStore = defineStore('mind', {
       display: null,
       node: getNodeWithInitialAttributes(),
       currentNodeId: null,
-      classNameCache: null,
+      currentNodeType: null,
     }
   }),
 

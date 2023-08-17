@@ -7,34 +7,50 @@
     @touchstart="startDrag"
   >
     <v-tabs v-model="tab">
-      <v-tab value="general">General</v-tab>
-      <v-tab value="style">Style</v-tab>
-      <v-tab v-if="mindStore.nodeMenu.node.nodeType === 'test'" value="test">Test</v-tab>
+      <v-tab v-show="displayGeneralAndStyle" value="general">General</v-tab>
+      <v-tab v-show="displayGeneralAndStyle" value="style">Style</v-tab>
+      <v-tab v-show="displayTest" value="test">Test</v-tab>
+      <v-tab v-show="displayTestResult" value="test-result">Test Result</v-tab>
     </v-tabs>
 
     <v-window v-model="tab">
       <v-window-item value="general" class="font-weight-light"><NodeMenuGeneral/></v-window-item>
       <v-window-item value="style" class="font-weight-light"><NodeMenuStyle/></v-window-item>
-      <v-window-item
-        v-if="mindStore.nodeMenu.node.nodeType === 'test'"
-        value="test"
-        class="font-weight-light">
-        <NodeMenuTest/>
-      </v-window-item>
+      <v-window-item value="test" class="font-weight-light"><NodeMenuTest/></v-window-item>
+      <v-window-item value="test-result" class="font-weight-light"><NodeMenuTestResult/></v-window-item>
     </v-window>
   </div>
 </template>
 
 <script setup>
-import {onMounted, ref} from 'vue';
+import { onMounted, ref, watch, computed } from 'vue';
 import { useMindStore } from "@/store/mind";
 import NodeMenuGeneral from "@/components/NodeMenuGeneral.vue";
 import NodeMenuStyle from "@/components/NodeMenuStyle.vue";
 import NodeMenuTest from "@/components/NodeMenuTest";
+import NodeMenuTestResult from "@/components/NodeMenuTestResult";
 
 const mindStore = useMindStore();
 
-const tab = ref(null);
+const tab = ref("general");
+const displayGeneralAndStyle = computed(() =>  ['general', 'scenario', 'test'].includes(mindStore.nodeMenu.node.nodeType));
+const displayTest = computed(() => mindStore.nodeMenu.node.nodeType === 'test');
+const displayTestResult = computed(() => ['at-result', 'mt-result'].includes(mindStore.nodeMenu.node.nodeType));
+
+watch(() => mindStore.nodeMenu.currentNodeType, (newType, oldType) => {
+  if (['general', 'scenario'].includes(newType)) {
+    if (oldType === 'test') tab.value = "general";
+    if (['at-result', 'mt-result'].includes(oldType)) tab.value = "general";
+    if (oldType === null) tab.value = "general";
+
+  } else if (newType === 'test') {
+    if (['at-result', 'mt-result', null].includes(oldType)) tab.value = "general";
+
+  } else if (['at-result', 'mt-result'].includes(newType)) {
+    tab.value = "test-result";
+
+  }
+});
 
 const posX = ref(0);
 const posY = ref(0);

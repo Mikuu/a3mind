@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { StatusCodes } = require('http-status-codes');
 const { generalResponse, catchAsync } = require("../utils/common-utils");
+const { testIdToId } = require("../utils/uuid-utils");
 const { check, query, validationResult } = require("express-validator");
 const resultService = require("../services/result-service");
 const { keycloak } = require("../middlewares/keycloak");
@@ -21,11 +22,12 @@ router.put("/nodes/results", [
 
         const results = [];
         for (const test of req.body.tests) {
-            const resultNode = await resultService.createOrUpdateResult(req.body.pid, req.body.vid, test.id, test.result);
+            const testNodeId = testIdToId(test.tid);
+            const resultNode = await resultService.createOrUpdateResult(req.body.pid, req.body.vid, testNodeId, test.result);
 
             if (resultNode) {
                 console.log(resultNode);
-                results.push({ testNodeId: test.id, resultNodeId: resultNode.id, result: resultNode.topic});
+                results.push({ testNodeId: testNodeId, resultNodeId: resultNode.id, result: resultNode.topic});
             }
         }
 
