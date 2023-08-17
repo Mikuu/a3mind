@@ -1,49 +1,76 @@
 <template>
   <v-container  class="px-0">
-    <div class="d-flex pt-1">
-      <p class="pr-2 pb-2">Test ID:</p>
-      <p>{{ idToTestId(mindStore.nodeMenu.node.id) }}</p>
-    </div>
-    <v-text-field v-model="mindStore.nodeMenu.node.testTitle" label="Test title" variant="outlined" class="mt-3"></v-text-field>
+    <v-select v-model="mindStore.nodeMenu.node.topic" label="Test result" :items="testResults" variant="outlined"></v-select>
+    <v-text-field v-model="mindStore.nodeMenu.node.tags" label="Tags" variant="outlined"></v-text-field>
+    <v-text-field v-model="mindStore.nodeMenu.node.hyperLink" label="Link" variant="outlined"></v-text-field>
     <v-textarea
-      v-model="mindStore.nodeMenu.node.testDescription"
-      label="Test description"
-      variant="outlined"
-      auto-grow
-      max-rows="18"
-      class="description font-weight-light"
-    ></v-textarea>
+      v-model="mindStore.nodeMenu.node.memo"
+      label="Notes" variant="outlined" auto-grow max-rows="12" class="memo"></v-textarea>
   </v-container>
 </template>
 
 <script setup>
 import { onMounted, computed, watch, ref } from 'vue';
 import { useMindStore } from "@/store/mind";
-import { idToTestId } from "@/utils/commonUtils";
+import {getDefaultNodeStyle} from "@/utils/styleUtils";
 
 const mindStore = useMindStore();
+
+const testResults = ["Passed", "Failed", "Unknown"];
 
 onMounted(() => {
   console.log(`FBI --> onMounted nodeMenuTest starting`);
 });
 
-watch(() => mindStore.nodeMenu.node.testTitle, (newTitle, oldTitle) => {
-  if (!mindStore.mind.currentNode) return
-  mindStore.mind.reshapeNode(mindStore.mind.currentNode, { testTitle: newTitle.trim() });
+const updateStyleAccordingToResult = testResult => {
+  const defaultStyle = getDefaultNodeStyle();
+
+  switch (testResult) {
+    case "Passed":
+      mindStore.mind.reshapeNode(mindStore.mind.currentNode,
+        { style: {"background": "#93ff00", "color": "#0a910a", "padding-inline": "8px"} });
+      break;
+    case "Failed":
+      mindStore.mind.reshapeNode(mindStore.mind.currentNode,
+        { style: {"background": "#ff024391", "color": "#f9f5df", "padding-inline": "8px"} });
+      break;
+    case "Unknown":
+      mindStore.mind.reshapeNode(mindStore.mind.currentNode,
+        { style: {"background": "#5002ff6b", "color": "#f9f5df", "padding-inline": "8px"} });
+      break;
+    default:
+      mindStore.mind.reshapeNode(mindStore.mind.currentNode,
+        { style: {"background": defaultStyle.background, "color": defaultStyle.color, "padding-inline": "8px"} });
+  }
+};
+
+watch(() => mindStore.nodeMenu.node.topic, (newTopic, oldTopic) => {
+  if (!mindStore.mind.currentNode || typeof newTopic !== 'string') return
+  mindStore.mind.reshapeNode(mindStore.mind.currentNode, { topic: newTopic.trim() });
+
+  updateStyleAccordingToResult(newTopic.trim());
 });
 
-watch(() => mindStore.nodeMenu.node.testDescription, (newDescription, oldDescription) => {
-  if (!mindStore.mind.currentNode) return
-  mindStore.mind.reshapeNode(mindStore.mind.currentNode, { testDescription: newDescription.trim() });
+watch(() => mindStore.nodeMenu.node.tags, (newTags, oldTags) => {
+  if (!mindStore.mind.currentNode || typeof newTags !== 'string') return
+  const newTagsArray = newTags.split(",")
+  mindStore.mind.reshapeNode(mindStore.mind.currentNode, { tags: newTagsArray.filter(tag => tag.trim()) })
+});
+
+watch(() => mindStore.nodeMenu.node.hyperLink, (newLink, oldLink) => {
+  if (!mindStore.mind.currentNode || typeof newLink !== 'string') return
+  mindStore.mind.reshapeNode(mindStore.mind.currentNode, { hyperLink: newLink })
+});
+
+watch(() => mindStore.nodeMenu.node.memo, (newMemo, oldMemo) => {
+  mindStore.mind.currentNode.nodeObj.memo = newMemo
+  mindStore.mind.bus.fire("operation", {
+    name: "updateMemo",
+    obj: mindStore.mind.currentNode.nodeObj
+  })
 });
 
 </script>
 
 <style>
-.description {
-  width: 520px;
-}
-.description textarea {
-  font-size: small;
-}
 </style>

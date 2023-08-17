@@ -4,7 +4,7 @@
       <p class="pr-2 pb-2">Test ID:</p>
       <p>{{ idToTestId(mindStore.nodeMenu.node.id) }}</p>
     </div>
-    <v-text-field v-model="mindStore.nodeMenu.node.testTitle" label="Test title" variant="outlined" class="mt-3"></v-text-field>
+    <v-text-field v-model="mindStore.nodeMenu.node.topic" label="Test title" variant="outlined" class="mt-3"></v-text-field>
     <v-textarea
       v-model="mindStore.nodeMenu.node.testDescription"
       label="Test description"
@@ -27,9 +27,9 @@ onMounted(() => {
   console.log(`FBI --> onMounted nodeMenuTest starting`);
 });
 
-watch(() => mindStore.nodeMenu.node.testTitle, (newTitle, oldTitle) => {
+watch(() => mindStore.nodeMenu.node.topic, (newTopic, oldTopic) => {
   if (!mindStore.mind.currentNode) return
-  mindStore.mind.reshapeNode(mindStore.mind.currentNode, { testTitle: newTitle.trim() });
+  mindStore.mind.reshapeNode(mindStore.mind.currentNode, { testTitle: newTopic.trim() });
 });
 
 watch(() => mindStore.nodeMenu.node.testDescription, (newDescription, oldDescription) => {
