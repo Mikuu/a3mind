@@ -5,12 +5,14 @@
     </v-container>
   </v-main>
   <NodeMenuAdv/>
+  <MainIsland/>
 </template>
 
 <script setup>
 import { onMounted } from "vue";
 import { useMindStore } from "@/store/mind";
 import NodeMenuAdv from "@/components/NodeMenuAdv.vue";
+import MainIsland from "@/components/MainIsland.vue";
 import '@mind-elixir/node-menu/dist/style.css'
 
 const props = defineProps(['vid']);
