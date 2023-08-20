@@ -6,7 +6,7 @@
       <v-btn icon="mdi-heart" @click="checkMindData"></v-btn>
       <v-btn icon="mdi-content-save-outline" @click="saveMindData"></v-btn>
       <v-btn icon="mdi-cloud-download-outline" @click="pullMindData"></v-btn>
-      <AccountMenu/>
+      <AccountMenu usedIn="menu"/>
 
     </template>
   </v-app-bar>
