@@ -5,18 +5,21 @@
     </v-container>
   </v-main>
   <NodeMenuAdv/>
+  <NavigationIsland :vid="props.vid"/>
+  <MainIsland/>
 </template>
 
 <script setup>
 import { onMounted } from "vue";
 import { useMindStore } from "@/store/mind";
 import NodeMenuAdv from "@/components/NodeMenuAdv.vue";
+import NavigationIsland from "@/components/NavigationIsland.vue";
+import MainIsland from "@/components/MainIsland.vue";
 import '@mind-elixir/node-menu/dist/style.css'
 
 const props = defineProps(['vid']);
 
 onMounted(async () => {
-  // console.log(`FBI --> MindCanvas onMounted started`);
   const mindStore = useMindStore();
   await mindStore.chargeMetaData(props.vid);
 
@@ -24,15 +27,19 @@ onMounted(async () => {
   await mindStore.pullMindData();
 
   mindStore.setupAutoSyncMindDataToStorage();
-
-  // console.log(`FBI --> MindCanvas onMounted completed`);
 });
+
 </script>
 
 <style>
 #mind-map {
   width: 100vw;
-  height: 93vh;
+  height: 100vh;
   box-sizing: content-box;
 }
+.map-container .mind-elixir-toolbar.lt {
+  top: unset;
+  bottom: 20px;
+}
+
 </style>
