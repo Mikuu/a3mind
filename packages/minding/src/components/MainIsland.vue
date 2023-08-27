@@ -5,24 +5,22 @@
     <v-btn icon="mdi-heart" :style="buttonIconStyle" size="small" @click="checkMindData"></v-btn>
     <v-btn icon="mdi-content-save-outline" :style="buttonIconStyle" size="small" @click="saveMindData"></v-btn>
     <v-btn icon="mdi-cloud-download-outline" :style="buttonIconStyle" size="small" @click="pullMindData"></v-btn>
-    <v-btn icon="mdi-tools" :style="buttonIconStyle" size="small"></v-btn>
+<!--    <v-btn icon="mdi-tools" :style="buttonIconStyle" size="small"></v-btn>-->
+    <ToolsMenu/>
     <v-btn icon="mdi-cog" :style="buttonIconStyle" size="small"></v-btn>
     <AccountMenu usedIn="island"/>
+
+    <NetworkSnackbar :show="displaySnackbar" :success="saveDataSucceed" :message="saveDataMessage" />
   </div>
 </template>
 
 <script setup>
 import { onMounted, ref, inject, watch, computed } from 'vue';
-
-const buttonIconStyle = "box-shadow: none; background-color: #2D3748 !important;";
-
-onMounted(async () => {
-  console.log(`FBI --> onMounted nodeMenuAdv starting`);
-});
-
 import { useMindStore } from "@/store/mind";
 import NetworkSnackbar from "./NetworkSnackbar.vue";
 import AccountMenu from "./AccountMenu.vue";
+import ToolsMenu from "@/components/ToolsMenu.vue";
+const buttonIconStyle = "box-shadow: none; background-color: #2D3748 !important;";
 
 const saveDataMessage = ref('');
 const saveDataSucceed = ref(true);
@@ -31,6 +29,10 @@ const keycloak = ref(inject('keycloak'));
 const mindStore = useMindStore();
 
 const props = defineProps(['breadcrumbs']);
+
+onMounted(async () => {
+  console.log(`FBI --> onMounted nodeMenuAdv starting`);
+});
 
 const checkMindData = () => {
   // mindStore.checkMindData();
@@ -44,36 +46,36 @@ const checkMindData = () => {
 };
 
 const saveMindData = () => {
-  // mindStore.saveMindData(
-  //   () => {
-  //     saveDataSucceed.value = true;
-  //     saveDataMessage.value = 'Save mind data succeed';
-  //     displaySnackbar.value = true;
-  //     setTimeout(() => { displaySnackbar.value = false }, 2000);
-  //   },
-  //   () => {
-  //     saveDataSucceed.value = false;
-  //     saveDataMessage.value = 'Save mind data failed';
-  //     displaySnackbar.value = true;
-  //     setTimeout(() => { displaySnackbar.value = false }, 3000);
-  //   },
-  // );
+  mindStore.saveMindData(
+    () => {
+      saveDataSucceed.value = true;
+      saveDataMessage.value = 'Save mind data succeed';
+      displaySnackbar.value = true;
+      setTimeout(() => { displaySnackbar.value = false }, 2000);
+    },
+    () => {
+      saveDataSucceed.value = false;
+      saveDataMessage.value = 'Save mind data failed';
+      displaySnackbar.value = true;
+      setTimeout(() => { displaySnackbar.value = false }, 3000);
+    },
+  );
 };
 
 const pullMindData = () => {
-  // mindStore.pullMindData(
-  //   () => {
-  //     saveDataSucceed.value = true;
-  //     saveDataMessage.value = 'Pull mind data succeed';
-  //     displaySnackbar.value = true;
-  //     setTimeout(() => { displaySnackbar.value = false }, 2000);
-  //   },
-  //   () => {
-  //     saveDataSucceed.value = false;
-  //     saveDataMessage.value = 'Pull mind data failed';
-  //     displaySnackbar.value = true;
-  //     setTimeout(() => { displaySnackbar.value = false }, 3000);
-  //   });
+  mindStore.pullMindData(
+    () => {
+      saveDataSucceed.value = true;
+      saveDataMessage.value = 'Pull mind data succeed';
+      displaySnackbar.value = true;
+      setTimeout(() => { displaySnackbar.value = false }, 2000);
+    },
+    () => {
+      saveDataSucceed.value = false;
+      saveDataMessage.value = 'Pull mind data failed';
+      displaySnackbar.value = true;
+      setTimeout(() => { displaySnackbar.value = false }, 3000);
+    });
 };
 
 </script>
