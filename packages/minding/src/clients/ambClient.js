@@ -7,7 +7,8 @@ import {
   PATH_PROJECT,
   PATH_PROJECTS,
   PATH_VIEWS,
-  PATH_NODE
+  PATH_NODE,
+  PATH_RESULTS_CLEAR,
 } from '@/configs/ambConfig';
 
 const buildUrl = resourcePath => {
@@ -100,5 +101,10 @@ export const updateNode = async (accessToken, nodeData) => {
     testDescription: nodeData.testDescription
   }
   return await put(url, accessToken, payload);
+};
 
+export const clearResults = async (accessToken, vid) => {
+  const url = buildUrl(PATH_RESULTS_CLEAR);
+  const payload = { vid };
+  return await post(url, accessToken, payload);
 };

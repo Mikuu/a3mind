@@ -7,25 +7,19 @@
       <v-btn icon="mdi-content-save-outline" @click="saveMindData"></v-btn>
       <v-btn icon="mdi-cloud-download-outline" @click="pullMindData"></v-btn>
       <AccountMenu usedIn="menu"/>
-
     </template>
   </v-app-bar>
-
-  <NetworkSnackbar :show="displaySnackbar" :success="saveDataSucceed" :message="saveDataMessage" />
-
 </template>
 
 <script setup>
   import { ref, inject } from 'vue';
   import { useMindStore } from "@/store/mind";
-  import NetworkSnackbar from "./NetworkSnackbar.vue";
+  import { useStatusStore } from "@/store/status";
   import AccountMenu from "./AccountMenu.vue";
 
-  const saveDataMessage = ref('');
-  const saveDataSucceed = ref(true);
-  const displaySnackbar = ref(false);
   const keycloak = ref(inject('keycloak'));
   const mindStore = useMindStore();
+  const statusStore = useStatusStore();
 
   const props = defineProps(['breadcrumbs']);
 
@@ -42,35 +36,16 @@
 
   const saveMindData = () => {
     mindStore.saveMindData(
-      () => {
-        saveDataSucceed.value = true;
-        saveDataMessage.value = 'Save mind data succeed';
-        displaySnackbar.value = true;
-        setTimeout(() => { displaySnackbar.value = false }, 2000);
-      },
-      () => {
-        saveDataSucceed.value = false;
-        saveDataMessage.value = 'Save mind data failed';
-        displaySnackbar.value = true;
-        setTimeout(() => { displaySnackbar.value = false }, 3000);
-      },
+      statusStore.requestSucceedHandler("Save mind data succeed"),
+      statusStore.requestFailedHandler("Save mind data failed")
     );
   };
 
   const pullMindData = () => {
     mindStore.pullMindData(
-      () => {
-        saveDataSucceed.value = true;
-        saveDataMessage.value = 'Pull mind data succeed';
-        displaySnackbar.value = true;
-        setTimeout(() => { displaySnackbar.value = false }, 2000);
-      },
-      () => {
-        saveDataSucceed.value = false;
-        saveDataMessage.value = 'Pull mind data failed';
-        displaySnackbar.value = true;
-        setTimeout(() => { displaySnackbar.value = false }, 3000);
-      });
+      statusStore.requestSucceedHandler("Pull mind data succeed"),
+      statusStore.requestFailedHandler("Pull mind data failed")
+    );
   };
 
 </script>

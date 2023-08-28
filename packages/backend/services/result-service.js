@@ -53,6 +53,16 @@ const createOrUpdateResult = async (pid, vid, testNodeId, result) => {
     return resultNode;
 };
 
+const clearResults = async (vid) => {
+    return await nodeService.deleteNodes({
+        $and: [
+            { vid },
+            { $or: [{nodeType: 'at-result'}, {nodeType: 'mt-result'}] }
+        ]
+    });
+};
+
 module.exports = {
-    createOrUpdateResult
+    createOrUpdateResult,
+    clearResults
 };

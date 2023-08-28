@@ -4,22 +4,20 @@
     <Project :pid="route.params.pid"/>
   </v-app>
 
-  <NetworkSnackbar :show="displaySnackbar" :success="opSucceed" :message="opMessage" />
+  <NetworkSnackbar />
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useProjectStore } from "@/store/project";
+import { useStatusStore } from "@/store/status";
 import AppBar from '@/components/AppBar.vue';
 import Project from '@/components/ProjectBoard.vue';
 import NetworkSnackbar from "@/components/NetworkSnackbar.vue";
 
-const opMessage = ref('');
-const opSucceed = ref(true);
-const displaySnackbar = ref(false);
-
 const route = useRoute();
+const statusStore = useStatusStore();
 const projectStore = useProjectStore();
 const projectName = ref(null);
 
@@ -39,10 +37,7 @@ const fetchProjectName = async () => {
   };
 
   const onFailed = (reason) => {
-    opSucceed.value = false;
-    opMessage.value = `get project failed ${reason}`;
-    displaySnackbar.value = true;
-    setTimeout(() => { displaySnackbar.value = false }, 5000);
+    statusStore.requestFailedHandler(`Get project failed ${reason}`, 5000)();
   }
 
   projectStore.getProject(route.params.pid, onSucceed, onFailed);

@@ -116,6 +116,11 @@ const deleteNodesByVid = async (vid) => {
     return deletedCount;
 };
 
+const deleteNodes = async (filters) => {
+    const { deletedCount } = await Node.deleteMany(filters);
+    return deletedCount;
+};
+
 module.exports = {
     fetchNodes,
     getNode,
@@ -127,5 +132,6 @@ module.exports = {
     findAndUpdateNode,
     deleteNode,
     deleteNodesByPid,
-    deleteNodesByVid
+    deleteNodesByVid,
+    deleteNodes
 };

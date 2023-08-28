@@ -194,7 +194,7 @@ export const useMindStore = defineStore('mind', {
       console.log(`token: ${keycloak.token}`);
     },
 
-    async saveMindData(succeedHandler, failedHandler) {
+    async saveMindData(succeedHandler=null, failedHandler=null) {
       const fullData = this.mind.getData();
       const viewData = extractViewData(this.vid, fullData);
       const updateNodes = flattenNodeData(fullData.nodeData, this.mindOperationStorage.updatedNodesIds);

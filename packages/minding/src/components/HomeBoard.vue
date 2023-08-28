@@ -34,24 +34,23 @@
     </tbody>
   </v-table>
 
-  <NetworkSnackbar :show="displaySnackbar" :success="opSucceed" :message="opMessage" />
+  <NetworkSnackbar />
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useProjectStore } from "@/store/project";
+import { useStatusStore } from "@/store/status";
 import ProjectMenu from './ProjectMenu';
 import NetworkSnackbar from "./NetworkSnackbar.vue";
 
-const opMessage = ref('');
-const opSucceed = ref(true);
-const displaySnackbar = ref(false);
+const statusStore = useStatusStore();
+const projectStore = useProjectStore();
 
 const projectInput = ref(null);
 const newProjectName = ref('');
 const isInputFocused = ref(false);
 
-const projectStore = useProjectStore();
 
 onMounted(() => {
   loadProjects();
@@ -70,10 +69,7 @@ const createProject = () => {
   };
 
   const onFailed = (reason) => {
-    opSucceed.value = false;
-    opMessage.value = `Create project failed ${reason}`;
-    displaySnackbar.value = true;
-    setTimeout(() => { displaySnackbar.value = false }, 5000);
+    statusStore.requestFailedHandler(`Create project failed ${reason}`, 5000)();
   }
 
   projectStore.createProject(trimmedProjectName, onSucceed, onFailed);

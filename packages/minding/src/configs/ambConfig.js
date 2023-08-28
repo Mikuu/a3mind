@@ -6,3 +6,4 @@ export const PATH_VIEW = "/view";
 export const PATH_VIEWS = "/views";
 export const PATH_NODE = "/node";
 export const PATH_NODES_BULK = "/nodes/bulk";
+export const PATH_RESULTS_CLEAR = "/nodes/results/clear";
