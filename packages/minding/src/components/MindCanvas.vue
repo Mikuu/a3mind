@@ -6,7 +6,7 @@
   </v-main>
   <NodeMenuAdv/>
   <NavigationIsland :vid="props.vid"/>
-  <MainIsland/>
+  <MainIsland :vid="props.vid"/>
 </template>
 
 <script setup>

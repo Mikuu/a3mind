@@ -23,6 +23,10 @@
 
 <script setup>
 import { inject, ref, defineProps, computed } from "vue";
+import { useNodeStore } from "@/store/node";
+
+const nodeStore = useNodeStore();
+const props = defineProps(['vid']);
 
 const openExportDialog = () => {
   console.log(`FBI --> open export dialog`);
@@ -30,6 +34,7 @@ const openExportDialog = () => {
 
 const clearTestResults = () => {
   console.log(`clear test results`);
+  nodeStore.clearResults(props.vid);
 };
 </script>
 

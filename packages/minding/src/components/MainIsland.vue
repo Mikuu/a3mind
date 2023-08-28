@@ -6,7 +6,7 @@
     <v-btn icon="mdi-content-save-outline" :style="buttonIconStyle" size="small" @click="saveMindData"></v-btn>
     <v-btn icon="mdi-cloud-download-outline" :style="buttonIconStyle" size="small" @click="pullMindData"></v-btn>
 <!--    <v-btn icon="mdi-tools" :style="buttonIconStyle" size="small"></v-btn>-->
-    <ToolsMenu/>
+    <ToolsMenu :vid="props.vid"/>
     <v-btn icon="mdi-cog" :style="buttonIconStyle" size="small"></v-btn>
     <AccountMenu usedIn="island"/>
 
@@ -28,7 +28,7 @@ const displaySnackbar = ref(false);
 const keycloak = ref(inject('keycloak'));
 const mindStore = useMindStore();
 
-const props = defineProps(['breadcrumbs']);
+const props = defineProps(['vid']);
 
 onMounted(async () => {
   console.log(`FBI --> onMounted nodeMenuAdv starting`);

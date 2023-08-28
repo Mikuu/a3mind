@@ -33,7 +33,23 @@ router.put("/nodes/results", [
 
         return res.status(StatusCodes.OK).send({ pid: req.body.pid, vid: req.body.vid, updatedTests: results });
     })
+);
 
+/* clear view's test results */
+router.post("/nodes/results/clear", [
+        keycloak.protect("automind-app:app-user"),
+        check("vid", "vid only accept letters in [a-zA-Z0-9]").matches(/^[a-zA-Z0-9]+$/),
+    ],
+    catchAsync(async (req, res, next) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(StatusCodes.BAD_REQUEST).json(generalResponse(errors.array()).failed);
+        }
+
+        const deletedCount = await resultService.clearResults(req.body.vid);
+
+        return res.status(StatusCodes.OK).send({ vid: req.body.vid, deletedCount });
+    })
 );
 
 module.exports = router;
