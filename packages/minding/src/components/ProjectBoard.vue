@@ -33,27 +33,22 @@
     </tr>
     </tbody>
   </v-table>
-
-  <NetworkSnackbar :show="displaySnackbar" :success="opSucceed" :message="opMessage" />
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useViewStore } from "@/store/view";
+import { useStatusStore } from "@/store/status";
 import "@/assets/routerLink.css";
 import ViewMenu from './ViewMenu.vue';
 import ViewsMenu from "@/components/ViewsMenu.vue";
-import NetworkSnackbar from "./NetworkSnackbar.vue";
-
-const opMessage = ref('');
-const opSucceed = ref(true);
-const displaySnackbar = ref(false);
 
 const viewInput = ref(null);
 const newViewName = ref('');
 const isInputFocused = ref(false);
 
 const viewStore = useViewStore();
+const statusStore = useStatusStore();
 const props = defineProps(['pid']);
 
 const viewType = ref('requirements');
@@ -64,10 +59,7 @@ onMounted(() => {
 
 const getOnFailed = (messagePrefix) => {
   return (reason) => {
-    opSucceed.value = false;
-    opMessage.value = `${messagePrefix} ${reason}`;
-    displaySnackbar.value = true;
-    setTimeout(() => { displaySnackbar.value = false }, 5000);
+    statusStore.requestFailedHandler(`${messagePrefix} ${reason}`, 5000)();
   }
 };
 

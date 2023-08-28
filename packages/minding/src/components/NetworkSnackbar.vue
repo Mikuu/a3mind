@@ -1,29 +1,35 @@
 <template>
   <v-snackbar
-    v-model="displaySnackbar"
+    v-model="statusStore.networkRequestShow"
     :color="snackColor"
     :close-on-content-click="true"
     location="top"
     rounded="pill"
     min-width="80"
   >
-    {{ props.message }}
+    {{ statusStore.networkRequestMessage }}
   </v-snackbar>
 </template>
 
 <script setup>
-import {computed, ref, watchEffect} from 'vue';
+import { computed } from 'vue';
+import { useStatusStore } from "@/store/status";
 
-const props = defineProps({
-  show: Boolean,
-  message: String,
-  success: Boolean,
-});
-
-const displaySnackbar = ref(props.show);
-watchEffect(() => displaySnackbar.value = props.show);
-
+const statusStore = useStatusStore();
 const snackColor = computed(() => {
-  return props.success ? 'green-lighten-1' : 'orange-darken-1';
+  return statusStore.networkRequestSuccess ? 'green-lighten-1' : 'orange-darken-1';
 });
+
+// const props = defineProps({
+//   show: Boolean,
+//   message: String,
+//   success: Boolean,
+// });
+
+// const displaySnackbar = ref(props.show);
+// watchEffect(() => displaySnackbar.value = props.show);
+//
+// const snackColor = computed(() => {
+//   return props.success ? 'green-lighten-1' : 'orange-darken-1';
+// });
 </script>

@@ -22,10 +22,14 @@
 </template>
 
 <script setup>
-import { inject, ref, defineProps, computed } from "vue";
+import { defineProps } from "vue";
+import { useMindStore } from "@/store/mind";
 import { useNodeStore } from "@/store/node";
+import { useStatusStore } from "@/store/status";
 
+const mindStore = useMindStore();
 const nodeStore = useNodeStore();
+const statusStore = useStatusStore();
 const props = defineProps(['vid']);
 
 const openExportDialog = () => {
@@ -33,8 +37,11 @@ const openExportDialog = () => {
 };
 
 const clearTestResults = () => {
-  console.log(`clear test results`);
-  nodeStore.clearResults(props.vid);
+  const succeedHandler = () => {
+    statusStore.requestSucceedHandler('Clear test results succeed')();
+    mindStore.pullMindData();
+  };
+  nodeStore.clearResults(props.vid, succeedHandler(), statusStore.requestFailedHandler('Clear test results failed'));
 };
 </script>
 
