@@ -12,12 +12,17 @@ router.put("/nodes/results", [
         keycloak.protect("automind-backend:internal-service"),
         check("pid", "pid must be provided").matches(/^[a-zA-Z0-9]+$/),
         check("vid", "vid only accept letters in [a-zA-Z0-9]").matches(/^[a-zA-Z0-9]+$/),
+        check("clearAll", "must be boolean").isBoolean(),
         check("tests", "array of test nodes").isArray(),
     ],
     catchAsync(async (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(StatusCodes.BAD_REQUEST).json(generalResponse(errors.array()).failed);
+        }
+
+        if (req.body.clearAll) {
+            await resultService.clearResults(req.body.vid);
         }
 
         const results = [];

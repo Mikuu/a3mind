@@ -27,14 +27,17 @@ const updateStyleAccordingToResult = testResult => {
 
   switch (testResult) {
     case "Passed":
+    case "AT-Passed":
       mindStore.mind.reshapeNode(mindStore.mind.currentNode,
         { style: {"background": "#93ff00", "color": "#0a910a", "padding-inline": "8px"} });
       break;
     case "Failed":
+    case "AT-Failed":
       mindStore.mind.reshapeNode(mindStore.mind.currentNode,
         { style: {"background": "#ff024391", "color": "#f9f5df", "padding-inline": "8px"} });
       break;
     case "Unknown":
+    case "AT-Unknown":
       mindStore.mind.reshapeNode(mindStore.mind.currentNode,
         { style: {"background": "#5002ff6b", "color": "#f9f5df", "padding-inline": "8px"} });
       break;
@@ -48,7 +51,9 @@ watch(() => mindStore.nodeMenu.node.topic, (newTopic, oldTopic) => {
   if (!mindStore.mind.currentNode || typeof newTopic !== 'string') return
   mindStore.mind.reshapeNode(mindStore.mind.currentNode, { topic: newTopic.trim() });
 
-  updateStyleAccordingToResult(newTopic.trim());
+  if (['at-result', 'mt-result'].includes(mindStore.nodeMenu.node.nodeType)) {
+    updateStyleAccordingToResult(newTopic.trim());
+  }
 });
 
 watch(() => mindStore.nodeMenu.node.tags, (newTags, oldTags) => {
