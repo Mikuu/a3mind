@@ -26,6 +26,8 @@ import { defineProps } from "vue";
 import { useMindStore } from "@/store/mind";
 import { useNodeStore } from "@/store/node";
 import { useStatusStore } from "@/store/status";
+import * as excelUtils from "@/utils/excelUtils";
+import XLSX from "xlsx";
 
 const mindStore = useMindStore();
 const nodeStore = useNodeStore();
@@ -34,6 +36,22 @@ const props = defineProps(['vid']);
 
 const openExportDialog = () => {
   console.log(`FBI --> open export dialog`);
+  // const excelData = excelUtils.mindDataToExcelDataTestNode(mindStore.mindDataSync.nodeData);
+  const { scenarioColumnCount, excelData } = excelUtils.mindDataToExcelDataAutoFill(mindStore.mindDataSync.nodeData);
+
+  console.log(mindStore.mindDataSync.nodeData);
+  console.log(excelData);
+
+  const filename = excelUtils.excelFilename(mindStore.mindDataSync.nodeData.topic);
+
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(excelData);
+
+  const mergeRange = { s: { r: 0, c: 0 }, e: { r: 0, c: scenarioColumnCount-1 } };
+  ws['!merges'] = [mergeRange];
+
+  XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+  XLSX.writeFile(wb, filename);
 };
 
 const clearTestResults = () => {
