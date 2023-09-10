@@ -4,7 +4,7 @@
       <v-btn icon="mdi-tools" style="box-shadow: none; background-color: #2D3748 !important;" size="small" v-bind="props"></v-btn>
     </template>
     <v-list>
-      <v-list-item link @click="openExportDialog">
+      <v-list-item link @click="isExportDialogOpen = true">
         <template v-slot:prepend>
           <v-icon icon="mdi-file-export-outline" color="primary"></v-icon>
         </template>
@@ -19,39 +19,38 @@
       </v-list-item>
     </v-list>
   </v-menu>
+
+  <v-dialog
+    v-model="isExportDialogOpen"
+    width="auto"
+  >
+    <v-card>
+      <v-card-text>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit
+      </v-card-text>
+      <v-card-actions>
+        <v-btn color="primary" block @click="isExportDialogOpen = false">Close</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
-import { defineProps } from "vue";
+import {defineProps, ref} from "vue";
 import { useMindStore } from "@/store/mind";
 import { useNodeStore } from "@/store/node";
 import { useStatusStore } from "@/store/status";
 import * as excelUtils from "@/utils/excelUtils";
-import XLSX from "xlsx";
 
 const mindStore = useMindStore();
 const nodeStore = useNodeStore();
 const statusStore = useStatusStore();
 const props = defineProps(['vid']);
 
+const isExportDialogOpen = ref(false);
+
 const openExportDialog = () => {
-  console.log(`FBI --> open export dialog`);
-  // const excelData = excelUtils.mindDataToExcelDataTestNode(mindStore.mindDataSync.nodeData);
-  const { scenarioColumnCount, excelData } = excelUtils.mindDataToExcelDataAutoFill(mindStore.mindDataSync.nodeData);
-
-  console.log(mindStore.mindDataSync.nodeData);
-  console.log(excelData);
-
-  const filename = excelUtils.excelFilename(mindStore.mindDataSync.nodeData.topic);
-
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.aoa_to_sheet(excelData);
-
-  const mergeRange = { s: { r: 0, c: 0 }, e: { r: 0, c: scenarioColumnCount-1 } };
-  ws['!merges'] = [mergeRange];
-
-  XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-  XLSX.writeFile(wb, filename);
+  excelUtils.createAndDownloadExcel(mindStore.mindDataSync.nodeData, mindStore.mindDataSync.nodeData.topic);
 };
 
 const clearTestResults = () => {

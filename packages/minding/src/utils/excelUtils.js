@@ -1,4 +1,5 @@
 import { idToTestId } from "@/utils/commonUtils";
+import XLSX from "xlsx";
 
 // export const mindDataToExcelData = mindData => {
 //   return [
@@ -70,4 +71,18 @@ export const mindDataToExcelDataAutoFill = (node) => {
 
 
   return { scenarioColumnCount: emptyArray.length + 1, excelData: [headers, ...rows] };
+};
+
+export const createAndDownloadExcel = (nodeData, rootNodeTopic) => {
+  const { scenarioColumnCount, excelData } = mindDataToExcelDataAutoFill(nodeData);
+  const filename = excelFilename(rootNodeTopic);
+
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(excelData);
+
+  const mergeRange = { s: { r: 0, c: 0 }, e: { r: 0, c: scenarioColumnCount - 1 } };
+  ws['!merges'] = [mergeRange];
+
+  XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+  XLSX.writeFile(wb, filename);
 };
