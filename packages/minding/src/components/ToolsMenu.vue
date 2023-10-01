@@ -4,7 +4,7 @@
       <v-btn icon="mdi-tools" style="box-shadow: none; background-color: #2D3748 !important;" size="small" v-bind="props"></v-btn>
     </template>
     <v-list>
-      <v-list-item link @click="isExportDialogOpen = true">
+      <v-list-item link @click="openExportDialog">
         <template v-slot:prepend>
           <v-icon icon="mdi-file-export-outline" color="primary"></v-icon>
         </template>
@@ -48,8 +48,9 @@
             </v-col>
             <v-col cols="8" class="pb-0">
               <v-select multiple clearable
+                        v-model="selectedTestTags"
                         :disabled="!enableFilterByTags || exportType !== 'tests'"
-                        :items="['California', 'Colorado']"
+                        :items="filterTestTags"
                         class="select-box"></v-select>
             </v-col>
           </v-row>
@@ -71,11 +72,13 @@
 </template>
 
 <script setup>
-import {computed, defineProps, ref} from "vue";
+import { computed, defineProps, ref, onMounted } from "vue";
 import { useMindStore } from "@/store/mind";
 import { useNodeStore } from "@/store/node";
 import { useStatusStore } from "@/store/status";
 import * as excelUtils from "@/utils/excelUtils";
+import { sleep } from "@/utils/commonUtils";
+import { collectTagsFromTestNodes } from "@/utils/dataUtils";
 
 const mindStore = useMindStore();
 const nodeStore = useNodeStore();
@@ -89,26 +92,35 @@ const exportAllClass = computed(() => { return exportType.value === 'all' ? 'ena
 const exportTestsClass = computed(() => { return exportType.value === 'tests' ? 'enabled-text' : 'disabled-text' });
 const exportLoading = ref(false);
 const alignColumns = ref(false);
+const selectedTestTags = ref([]);
+const filterTestTags = ref([]);
+
+const openExportDialog = () => {
+    isExportDialogOpen.value = true;
+    filterTestTags.value = collectTagsFromTestNodes(mindStore.mindDataSync.nodeData);
+};
 
 const exportData = () => {
-  if (exportType.value === 'all') {
-    excelUtils.createAndDownloadExcelOfAllEndingNodes(mindStore.mindDataSync.nodeData, mindStore.mindDataSync.nodeData.topic);
+    exportLoading.value = true;
 
-  } else if (exportType.value === 'tests') {
-    excelUtils.createAndDownloadExcelOfAllTestEndingNodes(
-      mindStore.mindDataSync.nodeData,
-      mindStore.mindDataSync.nodeData.topic,
-      alignColumns.value
-    );
-  }
+    if (exportType.value === 'all') {
+      excelUtils.createAndDownloadExcelOfAllEndingNodes(mindStore.mindDataSync.nodeData, mindStore.mindDataSync.nodeData.topic);
+
+    } else if (exportType.value === 'tests') {
+      excelUtils.createAndDownloadExcelOfAllTestEndingNodes(
+        mindStore.mindDataSync.nodeData,
+        mindStore.mindDataSync.nodeData.topic,
+        alignColumns.value,
+        { testTags: enableFilterByTags.value ? selectedTestTags.value : null }
+      );
+    }
+
+    exportLoading.value = false;
+    isExportDialogOpen.value = false
 };
 
 const closeDialog = () => {
-  exportLoading.value = true;
-  setTimeout(() => {
-    exportLoading.value = false;
     isExportDialogOpen.value = false
-  }, 4000);
 };
 
 const clearTestResults = () => {
@@ -118,6 +130,7 @@ const clearTestResults = () => {
   };
   nodeStore.clearResults(props.vid, succeedHandler(), statusStore.requestFailedHandler('Clear test results failed'));
 };
+
 </script>
 
 <style>

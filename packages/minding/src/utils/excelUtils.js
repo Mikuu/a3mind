@@ -5,11 +5,27 @@ const excelFilename = (rootNodeName) => {
   return `${rootNodeName}.xlsx`;
 };
 
-const mindDataToExcelDataTestNode = (node, parentTopics = []) => {
+const isTestTagsFulfilled = (testTags, filterTags) => {
+  // refer to not enabled.
+  if (filterTags === null) {
+    return true;
+  }
+
+  // otherwise enable and check the filter.
+  return filterTags.every(filterTag => testTags.includes(filterTag));
+};
+
+/**
+ * filters = {
+ *   testTags: ['regression', 'smoke', ...]
+ * }
+ * */
+const mindDataToExcelDataTestNode = (node, parentTopics = [],
+                                     filters={ testTags: null }) => {
   const currentTopic = node.topic;
   const currentRow = [...parentTopics, currentTopic];
 
-  if (node.nodeType === 'test') {
+  if (node.nodeType === 'test' && isTestTagsFulfilled(node.tags, filters.testTags)) {
     const currentId = idToTestId(node.id);
     const currentTags = Array.isArray(node.tags) ? node.tags.join(', ') : node.tags;
     const excelRow = [...currentRow, currentId, currentTags, node.testDescription];
@@ -20,7 +36,7 @@ const mindDataToExcelDataTestNode = (node, parentTopics = []) => {
 
   if (node.children && node.children.length > 0) {
     for (const childNode of node.children) {
-      const childRows = mindDataToExcelDataTestNode(childNode, currentRow);
+      const childRows = mindDataToExcelDataTestNode(childNode, currentRow, filters);
       rows = rows.concat(childRows);
     }
   }
@@ -28,8 +44,12 @@ const mindDataToExcelDataTestNode = (node, parentTopics = []) => {
   return rows;
 }
 
-const mindDataToExcelDataAutoFill = (node) => {
-  const testRows = mindDataToExcelDataTestNode(node);
+const mindDataToExcelDataAutoFill = (node, filters) => {
+  const testRows = mindDataToExcelDataTestNode(node, [], filters);
+  if (testRows.length === 0) {
+    return { scenarioColumnCount: 0, excelData: [] };
+  }
+
   const maxColumns = Math.max(...testRows.map(row => row.length));
 
   const rows = testRows.map(row => {
@@ -48,19 +68,25 @@ const mindDataToExcelDataAutoFill = (node) => {
   return { scenarioColumnCount: emptyArray.length + 1, excelData: [headers, ...rows] };
 };
 
-export const createAndDownloadExcelOfAllTestEndingNodes = (nodeData, rootNodeTopic, alignColumns=false) => {
+export const createAndDownloadExcelOfAllTestEndingNodes = (nodeData,
+                                                           rootNodeTopic,
+                                                           alignColumns=false,
+                                                           filters
+                                                           ) => {
   let wb, ws;
   if (alignColumns) {
-    const excelDataAutoFilled = mindDataToExcelDataAutoFill(nodeData);
+    const excelDataAutoFilled = mindDataToExcelDataAutoFill(nodeData, filters);
 
     wb = XLSX.utils.book_new();
     ws = XLSX.utils.aoa_to_sheet(excelDataAutoFilled.excelData);
 
-    const mergeRange = { s: { r: 0, c: 0 }, e: { r: 0, c: excelDataAutoFilled.scenarioColumnCount - 1 } };
-    ws['!merges'] = [mergeRange];
+    if (excelDataAutoFilled.scenarioColumnCount > 0) {
+        const mergeRange = { s: { r: 0, c: 0 }, e: { r: 0, c: excelDataAutoFilled.scenarioColumnCount - 1 } };
+        ws['!merges'] = [mergeRange];
+    }
 
   } else {
-    const excelData = mindDataToExcelDataTestNode(nodeData);
+    const excelData = mindDataToExcelDataTestNode(nodeData, [], filters);
     wb = XLSX.utils.book_new();
     ws = XLSX.utils.aoa_to_sheet(excelData);
   }
