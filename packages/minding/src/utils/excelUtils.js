@@ -1,35 +1,11 @@
 import { idToTestId } from "@/utils/commonUtils";
 import XLSX from "xlsx";
 
-// export const mindDataToExcelData = mindData => {
-//   return [
-//     ['name', 'age'],
-//     ['nanoha', 16],
-//     ['fate', 16]
-//   ];
-// };
-
-export const excelFilename = (rootNodeName) => {
+const excelFilename = (rootNodeName) => {
   return `${rootNodeName}.xlsx`;
 };
 
-export const mindDataToExcelDataEntire = (node, parentTopics = []) => {
-  const currentTopic = node.topic;
-  const currentRow = [...parentTopics, currentTopic];
-  const rows = [currentRow];
-
-  if (node.children && node.children.length > 0) {
-    for (const childNode of node.children) {
-      rows.push(...mindDataToExcelDataEntire(childNode, currentRow));
-    }
-  } else {
-    rows.push([...currentRow, '']);
-  }
-
-  return rows;
-}
-
-export const mindDataToExcelDataTestNode = (node, parentTopics = []) => {
+const mindDataToExcelDataTestNode = (node, parentTopics = []) => {
   const currentTopic = node.topic;
   const currentRow = [...parentTopics, currentTopic];
 
@@ -52,7 +28,7 @@ export const mindDataToExcelDataTestNode = (node, parentTopics = []) => {
   return rows;
 }
 
-export const mindDataToExcelDataAutoFill = (node) => {
+const mindDataToExcelDataAutoFill = (node) => {
   const testRows = mindDataToExcelDataTestNode(node);
   const maxColumns = Math.max(...testRows.map(row => row.length));
 
@@ -69,19 +45,53 @@ export const mindDataToExcelDataAutoFill = (node) => {
   const emptyArray = Array(maxColumns - headers.length).fill('');
   headers = [...headers.slice(0,1), ...emptyArray, ...headers.slice(-4)];
 
-
   return { scenarioColumnCount: emptyArray.length + 1, excelData: [headers, ...rows] };
 };
 
-export const createAndDownloadExcel = (nodeData, rootNodeTopic) => {
-  const { scenarioColumnCount, excelData } = mindDataToExcelDataAutoFill(nodeData);
+export const createAndDownloadExcelOfAllTestEndingNodes = (nodeData, rootNodeTopic, alignColumns=false) => {
+  let wb, ws;
+  if (alignColumns) {
+    const excelDataAutoFilled = mindDataToExcelDataAutoFill(nodeData);
+
+    wb = XLSX.utils.book_new();
+    ws = XLSX.utils.aoa_to_sheet(excelDataAutoFilled.excelData);
+
+    const mergeRange = { s: { r: 0, c: 0 }, e: { r: 0, c: excelDataAutoFilled.scenarioColumnCount - 1 } };
+    ws['!merges'] = [mergeRange];
+
+  } else {
+    const excelData = mindDataToExcelDataTestNode(nodeData);
+    wb = XLSX.utils.book_new();
+    ws = XLSX.utils.aoa_to_sheet(excelData);
+  }
+
+  const filename = excelFilename(rootNodeTopic);
+  XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+  XLSX.writeFile(wb, filename);
+};
+
+const mindDataToExcelDataAllEndingNodes = (nodeData, result = [], currentRow = []) => {
+  if (nodeData) {
+    currentRow.push(nodeData.topic);
+
+    if (nodeData.children && nodeData.children.length > 0) {
+      for (const child of nodeData.children) {
+        mindDataToExcelDataAllEndingNodes(child, result, currentRow.slice());
+      }
+    } else {
+      result.push(currentRow);
+    }
+  }
+
+  return result;
+}
+
+export const createAndDownloadExcelOfAllEndingNodes = (nodeData, rootNodeTopic) => {
+  const excelData = mindDataToExcelDataAllEndingNodes(nodeData);
   const filename = excelFilename(rootNodeTopic);
 
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.aoa_to_sheet(excelData);
-
-  const mergeRange = { s: { r: 0, c: 0 }, e: { r: 0, c: scenarioColumnCount - 1 } };
-  ws['!merges'] = [mergeRange];
 
   XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
   XLSX.writeFile(wb, filename);

@@ -55,6 +55,7 @@
           </v-row>
           <v-checkbox color="grey-darken-3"
                       label="Align columns"
+                      v-model="alignColumns"
                       :disabled="exportType !== 'tests'"
                       :class="exportTestsClass + ' check-box'"></v-checkbox>
         </div>
@@ -63,7 +64,7 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn color="primary" @click="closeDialog" class="text-none">Close</v-btn>
-        <v-btn color="primary" @click="closeDialog" class="text-none">Export</v-btn>
+        <v-btn color="primary" @click="exportData" class="text-none">Export</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -87,9 +88,19 @@ const enableFilterByTags = ref(false);
 const exportAllClass = computed(() => { return exportType.value === 'all' ? 'enabled-text' : 'disabled-text' });
 const exportTestsClass = computed(() => { return exportType.value === 'tests' ? 'enabled-text' : 'disabled-text' });
 const exportLoading = ref(false);
+const alignColumns = ref(false);
 
 const exportData = () => {
-  excelUtils.createAndDownloadExcel(mindStore.mindDataSync.nodeData, mindStore.mindDataSync.nodeData.topic);
+  if (exportType.value === 'all') {
+    excelUtils.createAndDownloadExcelOfAllEndingNodes(mindStore.mindDataSync.nodeData, mindStore.mindDataSync.nodeData.topic);
+
+  } else if (exportType.value === 'tests') {
+    excelUtils.createAndDownloadExcelOfAllTestEndingNodes(
+      mindStore.mindDataSync.nodeData,
+      mindStore.mindDataSync.nodeData.topic,
+      alignColumns.value
+    );
+  }
 };
 
 const closeDialog = () => {
