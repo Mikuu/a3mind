@@ -5,7 +5,15 @@ import * as ambClient from "@/clients/ambClient";
 export const useViewStore = defineStore('view', {
   state: () => ({
     views: [],
-    view: null
+    view: null,
+    config: {
+      prefixIcon: {
+        none: "",
+        epic: null,
+        scenario: null,
+        test: "📡  "
+      }
+    }
   }),
 
   getters: {},

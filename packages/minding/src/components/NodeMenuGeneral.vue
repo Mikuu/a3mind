@@ -21,7 +21,10 @@
 <script setup>
 import { onMounted, watch } from 'vue';
 import { useMindStore } from "@/store/mind";
+import { useViewStore } from "@/store/view";
+
 const mindStore = useMindStore();
+const viewStore = useViewStore();
 
 onMounted(() => {
   // console.log(`FBI --> onMounted nodeMenuGeneral starting`);
@@ -29,9 +32,72 @@ onMounted(() => {
   // console.log(mindStore.mind.currentNode);
 })
 
+/**
+ * below solution doesn't change topic itself, but need handle further handling to the .reshapeNode function, otherwise
+ * each calling of it will overwrite the added icon span and shadow span.
+ * */
+const prefixIconSolution = (mindStore) => {
+  const encodeHTML = (s) => {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;')
+  }
+
+  const preSpanContainer = document.createElement('span');
+  preSpanContainer.className = 'icons';
+  preSpanContainer.innerHTML = [viewStore.config.prefixIcon.test].map(icon => `<span>${encodeHTML(icon)}</span>`).join('');
+
+  const shadowSpan = document.createElement('span');
+  shadowSpan.className = 'shadow-span';
+  shadowSpan.textContent = mindStore.mind.currentNode.nodeObj.topic;
+
+  // 3 means text node, similarly, 1 means element node.
+  if (mindStore.mind.currentNode.firstChild.nodeType === 3) {
+    mindStore.mind.currentNode.insertBefore(preSpanContainer, mindStore.mind.currentNode.firstChild);
+    mindStore.mind.currentNode.insertBefore(shadowSpan, preSpanContainer);
+
+    mindStore.mind.linkDiv(); // draw lines longer.
+
+  } else {
+    mindStore.mind.currentNode.replaceChild(preSpanContainer, mindStore.mind.currentNode.firstChild);
+  }
+
+  const observer = new MutationObserver((mutationsList, observer) => {
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'childList') {
+        console.log('节点内容已更改');
+        console.log(mutation);
+        console.log(`new topic: ${mutation.addedNodes[0].textContent}`);
+        // ... continue to replace topic with mutation.addedNodes[0].textContent
+      }
+    }
+  });
+
+  const config = { childList: true };
+  observer.observe(shadowSpan, config);
+};
+
 watch(() => mindStore.nodeMenu.node.nodeType, (newType, oldType) => {
   if (!mindStore.mind.currentNode) return
   mindStore.mind.reshapeNode(mindStore.mind.currentNode, { nodeType: newType })
+
+  if (newType === 'test' && !mindStore.mind.currentNode.nodeObj.topic.startsWith(viewStore.config.prefixIcon.test)) {
+    const topicWithPrefixIcon = viewStore.config.prefixIcon.test + mindStore.mind.currentNode.nodeObj.topic;
+    mindStore.nodeMenu.node.topic = topicWithPrefixIcon;
+    mindStore.mind.reshapeNode(mindStore.mind.currentNode, { topic: topicWithPrefixIcon });
+  }
+
+  if (newType !== 'test' && mindStore.mind.currentNode.nodeObj.topic.startsWith(viewStore.config.prefixIcon.test)) {
+    mindStore.nodeMenu.node.topic = mindStore.nodeMenu.node.topic.replace(viewStore.config.prefixIcon.test, "");
+    mindStore.mind.reshapeNode(
+        mindStore.mind.currentNode,
+        { topic: mindStore.mind.currentNode.nodeObj.topic.replace(viewStore.config.prefixIcon.test, "") }
+    );
+  }
+
+  // another solution, uncompleted, keep it here just for in case, who knows.
+  // if (newType === 'test') {
+  //   prefixIconSolution(mindStore);
+  // }
+
 });
 
 watch(() => mindStore.nodeMenu.node.topic, (newTopic, oldTopic) => {
@@ -81,5 +147,8 @@ watch(() => mindStore.nodeMenu.node.memo, (newMemo, oldMemo) => {
 <style>
 .memo {
   width: 360px;
+}
+.shadow-span {
+  display: none;
 }
 </style>
