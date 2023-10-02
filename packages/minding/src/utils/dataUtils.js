@@ -96,3 +96,23 @@ export const nodesToMindData = nodes => {
   const listOfObjects = buildNestedObjectInList(nodes);
   return listOfObjects.pop();
 }
+
+export const collectTagsFromTestNodes = (node, result = []) => {
+  if (node) {
+    if (node.nodeType === 'test') {
+      for (const tag of node.tags) {
+        if (!result.includes(tag)) {
+          result.push(tag);
+        }
+      }
+    }
+
+    if (node.children && node.children.length > 0) {
+      for (const child of node.children) {
+        collectTagsFromTestNodes(child, result);
+      }
+    }
+  }
+
+  return result;
+}

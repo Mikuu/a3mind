@@ -70,3 +70,7 @@ export const idToTestId = (id) => {
 export const testIdToId = (testId) => {
   return testId.replace('TID', '').toLowerCase();
 };
+
+export const sleep = (ms) => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
